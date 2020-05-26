@@ -1,0 +1,77 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Title</title>
+</head>
+<body>
+    <table class="table">
+        {% for category in category %}
+            <th>{{ category.name }}</th>
+        {% endfor %}
+        <tr>
+            {% for a in a.0 %}
+                {% if a != '' %}
+					<td><a>{{ a.name }}</a></td>
+				{% else %}
+					<td>{{ a.name }}</td>
+				{% endif %}
+            {%  endfor %}
+        </tr>
+        <tr>
+            {% for a in a.1 %}
+                {% if a != '' %}
+                    <td><a>{{ a.name }}</a></td>
+                {% else %}
+					<td>{{ a.name }}</td>
+                {% endif %}
+            {%  endfor %}
+        </tr>
+        <tr>
+            {% for a in a.2 %}
+                {% if a != '' %}
+                    <td><a>{{ a.name }}</a></td>
+                {% else %}
+					<td>{{ a.name }}</td>
+                {% endif %}
+            {%  endfor %}
+        </tr>
+        <tr>
+            {% for a in a.3 %}
+                {% if a != '' %}
+                    <td><a>{{ a.name }}</a></td>
+                {% else %}
+					<td>{{ a.name }}</td>
+                {% endif %}
+            {%  endfor %}
+        </tr>
+        <tr>
+            {% for a in a.4 %}
+                {% if a != '' %}
+                    <td><a>{{ a.name }}</a></td>
+                {% else %}
+					<td>{{ a.name }}</td>
+				{% endif %}
+            {%  endfor %}
+        </tr>
+        <tr>
+            {% for a in a.5 %}
+                {% if a != '' %}
+                    <td><a>{{ a.name }}</a></td>
+                {% else %}
+					<td>{{ a.name }}</td>
+				{% endif %}
+            {%  endfor %}
+        </tr>
+        <tr>
+            {% for a in a.6 %}
+                {% if a != '' %}
+                    <td><a>{{ a.name }}</a></td>
+                {% else %}
+					<td>{{ a.name }}</td>
+				{% endif %}
+            {%  endfor %}
+        </tr>
+    </table>
+</body>
+</html>

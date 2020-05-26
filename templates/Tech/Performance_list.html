@@ -1,0 +1,30 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Title</title>
+</head>
+<body>
+<div class="btn-group">
+    <a href="{% url 'Tech:add' %}" class="btn btn-info">Add Peformance</a>
+</div>
+<p>
+</p>
+<table class="table">
+    <thead>
+    <tr>
+        <th scope="col">#</th>
+        <th scope="col">Title</th>
+    </tr>
+    </thead>
+    <tbody>
+        {%  for performance in per_list %}
+            <tr>
+                <td>{{ forloop.counter0 }}</td>
+                <td><a href="{% url 'Tech:category' pk=performance.id %}">{{ performance.title }}</a></td>
+             </tr>
+        {% endfor %}
+    </tbody>
+</table>
+</body>
+</html>
