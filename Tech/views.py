@@ -4,7 +4,7 @@ from .models import *
 from rest_framework import status
 from rest_framework.decorators import api_view
 from rest_framework.response import Response
-from .serializers import PerformanceSerializer
+from .serializers import *
 # Create your views here.
 
 
@@ -18,17 +18,19 @@ def PeListView(request):
         serializer = PerformanceSerializer(per_list, many=True)
         return Response(serializer.data)
 
+@api_view(['GET','POST'])
 def PeCreateView(request):
     if request.method == "POST":
+        create_serializer = PerformanceCreateSerializer(data=request.data)
         form = PerCreateForm(request.POST, request.FILES)
         scontents = SContents.objects.order_by('id')
-        if form.is_valid():
-            genre = form.cleaned_data['genre']
-            title = form.cleaned_data['title']
-            direction = form.cleaned_data['direction']
-            construct = form.cleaned_data['construct']
-            check = form.cleaned_data['check']
-            date = form.cleaned_data['date']
+        if create_serializer.is_valid():
+            genre = create_serializer.validated_data['genre']
+            title = create_serializer.validated_data['title']
+            direction = create_serializer.validated_data['direction']
+            construct = create_serializer.validated_data['construct']
+            check = create_serializer.validated_data['check']
+            date = create_serializer.validated_data['date']
             p = Performance.objects.order_by('-id')
             l=p[0].id+1
             perfor=Performance.objects.create(pk=l,title=title)
@@ -46,11 +48,8 @@ def PeCreateView(request):
             for i in range(0,59):
                 MTask.objects.create(TNum=s[i].TNum,DetNum=s[i].DetNum,TName=s[i].TName,DetName=s[i].DetName,
                                      SCNum=s[i].SCNum,objective=s[i].objective,category=s[i].category_id,performance=perfor)
-            return redirect('Tech:list')
-    else:
-        form = PerCreateForm()
-    context = {'form':form}
-    return render(request,'Tech/Performance_create.html',context)
+            return Response(create_serializer.data, status=status.HTTP_201_CREATED)
+    return Response(create_serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 
 
