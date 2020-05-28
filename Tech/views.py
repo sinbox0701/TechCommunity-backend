@@ -1,17 +1,22 @@
 from django.shortcuts import render, get_object_or_404, redirect,get_list_or_404
 from .forms import *
 from .models import *
-
+from rest_framework import status
+from rest_framework.decorators import api_view
+from rest_framework.response import Response
+from .serializers import PerformanceSerializer
 # Create your views here.
 
 
 def show(request):
     return render(request, 'base.html')
 
+@api_view(['GET', 'POST'])
 def PeListView(request):
-    per_list = Performance.objects.all()
-    context = {'per_list':per_list}
-    return render(request,'Tech/Performance_list.html',context)
+    if request.method == 'GET':
+        per_list = Performance.objects.all()
+        serializer = PerformanceSerializer(per_list, many=True)
+        return Response(serializer.data)
 
 def PeCreateView(request):
     if request.method == "POST":
