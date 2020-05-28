@@ -44,7 +44,7 @@ class SContents(models.Model):
     filetype = enum.EnumField(FileType, default=FileType.text, null=True, blank=True)
 
     def __str__(self):
-        return self.SCName
+        return str(self.id) + "," + self.SCName
 
 class MContents(models.Model):
     SCNum = models.IntegerField(null=False)
@@ -55,7 +55,7 @@ class MContents(models.Model):
     bcontent = models.BooleanField(null=True, blank=True, default=0)
 
     def __str__(self):
-        return self.performance.title + "," + self.SCName
+        return str(self.id) + "," + str(self.SCNum) + "," + self.performance.title + "," + self.SCName
 
 class STask(models.Model):
     TNum = models.IntegerField(null=False)
@@ -67,22 +67,34 @@ class STask(models.Model):
     category = models.ForeignKey(Category, on_delete=models.CASCADE, null=True, blank=True)
 
     def __str__(self):
-        return self.id + "," + self.TNum + "," +  self.DetNum + "," + self.SCNum + "," + self.TName + "," + self.DetName
+        return str(self.id) + "," + str(self.TNum) + "," +  str(self.DetNum) + "," + str(self.SCNum) + "," + self.TName + "," + self.DetName
+
+class statustyle(enum.Enum):
+    none = 0
+    ing = 1
+    delay = 2
+    finish = 3
 
 
 class MTask(models.Model):
     TNum = models.IntegerField(null=True, blank=True)
     DetNum = models.IntegerField(null=True, blank=True)
     TName = models.CharField(max_length=40, null=False)
+    SCNum = models.IntegerField(null=True, blank=True)
     DetName = models.CharField(max_length=40, null=False)
+    objective = models.TextField(null=True, blank=True)
+    category = models.IntegerField(null=True, blank=True)
     mcontents = models.ForeignKey(MContents, on_delete=models.CASCADE, null=True, blank=True)
     performance = models.ForeignKey(Performance, on_delete=models.CASCADE, null=True, blank=True)
     department = models.ForeignKey(Department, on_delete=models.CASCADE, null=True,blank=True)
     userdetail = models.ForeignKey(UserDetail, on_delete=models.CASCADE, null=True, blank=True)
     endDate = models.DateTimeField(null=True, blank=True)
+    status = enum.EnumField(statustyle, default=statustyle.none, null=False)
 
     def __str__(self):
-        return self.id + "," +  self.TNum + "," + self.DetNum + "," + self.mcontents.id + "," + self.TName + "," + self.DetName
+
+        return self.performance.title + "," + str(self.id) + "," +  str(self.TNum) + "," + str(self.DetNum)+ "," + str(
+            self.SCNum) + "," + self.TName + "," + self.DetName
 
 
 class DetailLog(models.Model):

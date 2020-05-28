@@ -16,10 +16,7 @@ def PeListView(request):
 def PeCreateView(request):
     if request.method == "POST":
         form = PerCreateForm(request.POST, request.FILES)
-        for i in range(1, 38):
-            scontents = SContents.objects.order_by('id')
-
-            print(scontents)
+        scontents = SContents.objects.order_by('id')
         if form.is_valid():
             genre = form.cleaned_data['genre']
             title = form.cleaned_data['title']
@@ -39,9 +36,11 @@ def PeCreateView(request):
                     mc = MContents.objects.get(performance=perfor,SCNum=scontents[i].id,SCName=scontents[i].SCName)
                     mc.tcontent = a[i]
                     mc.save()
-
-
-
+            MContents.objects.order_by('id')
+            s = STask.objects.order_by('id')
+            for i in range(0,59):
+                MTask.objects.create(TNum=s[i].TNum,DetNum=s[i].DetNum,TName=s[i].TName,DetName=s[i].DetName,
+                                     SCNum=s[i].SCNum,objective=s[i].objective,category=s[i].category_id,performance=perfor)
             return redirect('Tech:list')
     else:
         form = PerCreateForm()
@@ -53,9 +52,18 @@ def PeCreateView(request):
 def PeCateView(request,pk):
     category = Category.objects.all()
     performance = get_object_or_404(Performance, pk=pk)
-    stask = get_list_or_404(STask, performance=performance)
-    #mtask = get_list_or_404(MTask, stask=stask)
+    mtask = get_list_or_404(MTask, performance=performance)
 
+
+    mlist = []
+    ml = []
+    for i in mtask:
+        if i.TNum not in mlist:
+            mlist.append(i.TNum)
+            ml.append(i)
+        else:
+            continue
+    print(ml)
     max=0
     zero =[]
     one=[]
@@ -63,16 +71,16 @@ def PeCateView(request,pk):
     three=[]
     four=[]
 
-    for i in stask:
-        if i.category_id == category[0].id:
+    for i in ml:
+        if i.category == category[0].id:
             zero.append(i)
-        elif i.category_id == category[1].id:
+        elif i.category == category[1].id:
             one.append(i)
-        elif i.category_id == category[2].id:
+        elif i.category == category[2].id:
             two.append(i)
-        elif i.category_id == category[3].id:
+        elif i.category == category[3].id:
             three.append(i)
-        elif i.category_id == category[4].id:
+        elif i.category == category[4].id:
             four.append(i)
     list = []
     list.append(len(zero))
@@ -86,7 +94,6 @@ def PeCateView(request,pk):
             max = list[i]
     list.append(int(max))
     act=[]
-    a=[]
     for i in range(0,max):
         if i >= len(zero):
             act.append('')
@@ -123,5 +130,10 @@ def PeCateView(request,pk):
     for i in range(0,max):
         l.append(int(i))
     print(l)
-    context = {'category':category, 'performance':performance, 'stask':stask,'act':act,'a':a,'l':l}
+    context = {'category':category, 'performance':performance, 'mtask':mtask,'act':act,'a':a,'l':l}
     return render(request,'Tech/Category_list.html',context)
+
+'''def TaModifyView(request,pk):
+    mtask = get_object_or_404(MTask,pk=pk)
+    if request.method == "POST":'''
+
