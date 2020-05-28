@@ -13,3 +13,15 @@ class PerformanceCreateSerializer(serializers.Serializer):
     construct = serializers.CharField(label='construct', max_length=1000)
     check = serializers.CharField(label='check', max_length=1000)
     date = serializers.CharField(label='date', max_length=1000)
+
+class MTaskSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = MTask
+        fields = '__all__'
+
+class CategorySerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Category
+        fields = '__all__'
+
+ 
