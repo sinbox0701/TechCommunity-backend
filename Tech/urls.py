@@ -11,4 +11,5 @@ urlpatterns = [
     path('', PeListView, name='list'),
     path('add/', PeCreateView, name='add'),
     path('category/<int:pk>', PeCateView, name='category'),
+    path('delete/<int:pk>',PeDeleteView,name='delete'),
 ]+ static(settings.MEDIA_URL, document_root=settings.MEDIA_URL)
