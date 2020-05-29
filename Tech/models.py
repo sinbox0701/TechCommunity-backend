@@ -74,13 +74,14 @@ class MContents(models.Model): # 공연별 콘텐츠에 들어갈 내용
 
 class STask(models.Model):
     TNum = models.IntegerField(null=False) # Task number
-    DetNum = models.IntegerField(null=False) # 업무항목 number
+    DetNum = models.IntegerField(null=True, blank=True) # 업무항목 number
     SCNum = models.IntegerField(null=True, blank=True) # 템플릿 콘텐츠 id
     TName = models.CharField(max_length=40, null=False) # Task 이름
-    DetName = models.CharField(max_length=40, null=False) # 업무항목 이름
+    DetName = models.CharField(max_length=40,null=True, blank=True) # 업무항목 이름
     objective = models.TextField(null=True, blank=True) # 목표
     category = models.ForeignKey(Category, on_delete=models.CASCADE, null=True, blank=True)
     bool = models.BooleanField(null=True,blank=True,default=0) # 일반업무 = 0 회의업무 = 1
+    Dbool = models.BooleanField(null=True,blank=True,default=0) # Task 만 => 1 Task+Det+Contents =>0
 
     def __str__(self):
         return str(self.id) + "," + str(self.TNum) + "," +  str(self.DetNum) + "," + str(self.SCNum) + "," + self.TName + "," + self.DetName
@@ -94,10 +95,10 @@ class statustyle(enum.Enum):
 
 class MTask(models.Model):
     TNum = models.IntegerField(null=False)  # Task number
-    DetNum = models.IntegerField(null=False)  # 업무항목 number
+    DetNum = models.IntegerField(null=True, blank=True)  # 업무항목 number
     SCNum = models.IntegerField(null=True, blank=True)  # 템플릿 콘텐츠 id
     TName = models.CharField(max_length=40, null=False)  # Task 이름
-    DetName = models.CharField(max_length=40, null=False)  # 업무항목 이름
+    DetName = models.CharField(max_length=40, null=True, blank=True)  # 업무항목 이름
     objective = models.TextField(null=True, blank=True)  # 목표
     category = models.IntegerField(null=True, blank=True)
     mcontents = models.ForeignKey(MContents, on_delete=models.CASCADE, null=True, blank=True) # Task 별 들어갈 콘텐츠
@@ -110,11 +111,11 @@ class MTask(models.Model):
     status = enum.EnumField(statustyle, default=statustyle.none, null=False) # 업무 상태
     place = models.TextField(null=True, blank=True) # 회의업무 시에 회의장소
     bool = models.BooleanField(null=True, blank=True, default=0)  # 일반업무 = 0 회의업무 = 1
+    Dbool = models.BooleanField(null=True, blank=True, default=0)  # Task 만 => 1 Task+Det+Contents =>0
 
     def __str__(self):
 
-        return self.performance.title + "," + str(self.id) + "," +  str(self.TNum) + "," + str(self.DetNum)+ "," + str(
-            self.SCNum) + "," + self.TName + "," + self.DetName
+        return self.performance.title + "," + str(self.id) + "," +  str(self.TNum) + "," +  self.TName
 
 
 class DetailLog(models.Model):
