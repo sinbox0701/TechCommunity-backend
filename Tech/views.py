@@ -89,9 +89,10 @@ def PeDeleteView(request,pk):
 
 
 
-@api_view(['GET', 'POST'])
+@api_view(['GET', 'POST','PUT'])
 def TaskContentView(request, pk, tnum):
-    mtask = get_list_or_404(MTask, performance_id=pk, TNum=tnum)
+    mt = get_list_or_404(MTask, performance_id=pk, TNum=tnum)
+    mtask = mt.order_by('DetNum')
     mtask_serializer = MTaskSerializer(mtask, many=True)
     sc = []
     mc = []
@@ -108,9 +109,11 @@ def TaskContentView(request, pk, tnum):
     mcont_serializer = MContentSerializer(mcont, many=True)
     print(type(mtask_serializer))
 
-    if request.method == 'GET':
+    if request.method == 'GET': # Contents Task Read
         s = mtask_serializer.data + mcont_serializer.data
         return Response(s)
+
+    #elif request.method == 'PUT': # Task Update
 
 @api_view(['GET', 'PUT'])
 def ContentsUpdateView(request,pk,tnum,id):
@@ -128,12 +131,14 @@ def ContentsUpdateView(request,pk,tnum,id):
         if con.id == id:
             con_serializer = MContentSerializer(con,request.data)
             break
-    if request.method == 'PUT':
+    if request.method == 'PUT': # Contents Update
         if con_serializer.is_valid():
             con_serializer.save()
             return Response(con_serializer.data)
         return Response(con_serializer.errors, status.HTTP_400_BAD_REQUEST)
 
+#@api_view(['GET', 'PUT'])
+#def TaskUpdateView(request,pk,tnum,):
 
 
 '''def TaModifyView(request,pk):
