@@ -34,3 +34,4 @@ class MContentSerializer(serializers.ModelSerializer):
     class Meta:
         model = MContents
         fields = '__all__'
+
