@@ -9,10 +9,16 @@ class PerformanceSerializer(serializers.ModelSerializer):
 class PerformanceCreateSerializer(serializers.Serializer):
     genre = serializers.CharField(label='genre', max_length=1000)
     title = serializers.CharField(label='title', max_length=1000)
-    direction = serializers.CharField(label='direction', max_length=1000)
-    construct = serializers.CharField(label='construct', max_length=1000)
+    directiont = serializers.CharField(label='title', max_length=1000)
+    # directionf = serializers.FileField(label='',upload_to="files/")
+    configurationt = serializers.CharField(label='configurationt', max_length=1000)
+    # configurationf = serializers.FileField(label='configurationf',upload_to="files/")
     check = serializers.CharField(label='check', max_length=1000)
     date = serializers.CharField(label='date', max_length=1000)
+    place = serializers.CharField(label='place', max_length=1000)
+    special = serializers.CharField(label='special', max_length=1000)
+    # drawing = serializers.FileField(label='drawing',upload_to="files/")
+
 
 class MTaskSerializer(serializers.ModelSerializer):
     class Meta:

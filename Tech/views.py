@@ -27,27 +27,28 @@ def PeCreateView(request):
         if create_serializer.is_valid():
             genre = create_serializer.validated_data['genre']
             title = create_serializer.validated_data['title']
-            direction = create_serializer.validated_data['direction']
-            construct = create_serializer.validated_data['construct']
+            directiont = create_serializer.validated_data['directiont']
+            configurationt = create_serializer.validated_data['configurationt']
             check = create_serializer.validated_data['check']
             date = create_serializer.validated_data['date']
+            place = create_serializer.validated_data['place']
+            special = create_serializer.validated_data['special']
             p = Performance.objects.order_by('-id')
             l=p[0].id+1
             perfor=Performance.objects.create(pk=l,title=title)
-            a=[genre,title,'',direction,'',construct,'',check,date]
-            for i in range(0, 37):
+            a=[genre,title,directiont,configurationt,check,date,place,special]
+            for i in range(0, 26):
                 MContents.objects.create(performance=perfor, SCNum=scontents[i].id, SCName=scontents[i].SCName)
             MContents.objects.order_by('id')
-            for i in range(0,9):
-                if i!=4 or i!=6 or i!=2:
-                    mc = MContents.objects.get(performance=perfor,SCNum=scontents[i].id,SCName=scontents[i].SCName)
-                    mc.tcontent = a[i]
-                    mc.save()
+            for i in range(0,8):
+                mc = MContents.objects.get(performance=perfor,SCNum=scontents[i].id,SCName=scontents[i].SCName)
+                mc.tcontent = a[i]
+                mc.save()
             MContents.objects.order_by('id')
             s = STask.objects.order_by('id')
-            for i in range(0,59):
+            for i in range(0,43):
                 MTask.objects.create(TNum=s[i].TNum,DetNum=s[i].DetNum,TName=s[i].TName,DetName=s[i].DetName,
-                                     SCNum=s[i].SCNum,objective=s[i].objective,category=s[i].category_id,performance=perfor)
+                                     SCNum=s[i].SCNum,objective=s[i].objective,category=s[i].category_id,bool=s[i].bool,performance=perfor)
             return Response(create_serializer.data, status=status.HTTP_201_CREATED)
     return Response(create_serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
