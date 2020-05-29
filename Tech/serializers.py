@@ -35,3 +35,7 @@ class MContentSerializer(serializers.ModelSerializer):
         model = MContents
         fields = '__all__'
 
+class MTaskUDSerializer(serializers.Serializer):
+    class Meta:
+        model = MTask
+        fields = ['userdetail']

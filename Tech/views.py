@@ -36,6 +36,8 @@ def PeCreateView(request):
             p = Performance.objects.order_by('-id')
             l=p[0].id+1
             perfor=Performance.objects.create(pk=l,title=title)
+           #new_user = UserDetail.objects.create(user=request.user, performance=perfor)
+            #new_user.save()
             a=[genre,title,directiont,configurationt,check,date,place,special]
             for i in scontents:
                 MContents.objects.create(performance=perfor, SCNum=i.id, SCName=i.SCName)
@@ -49,14 +51,20 @@ def PeCreateView(request):
             for i in s:
                 for x in mct:
                     if i.SCNum == None:
-                        MTask.objects.create(TNum=i.TNum, DetNum=i.DetNum, TName=i.TName, DetName=i.DetName,
-                                             SCNum=i.SCNum, objective=i.objective, category=i.category_id, bool=i.bool,
-                                             performance=perfor)
+                        if i.Dbool == 1:
+                            MTask.objects.create(TNum=i.TNum, DetNum=i.DetNum, TName=i.TName, DetName=i.DetName,
+                                                 SCNum=i.SCNum, objective=i.objective, category=i.category_id,
+                                                 bool=i.bool,
+                                                 performance=perfor, Dbool=1)
+                        else:
+                            MTask.objects.create(TNum=i.TNum, DetNum=i.DetNum, TName=i.TName, DetName=i.DetName,
+                                                 SCNum=i.SCNum, objective=i.objective, category=i.category_id, bool=i.bool,
+                                                 performance=perfor,Dbool=0)
                         break
                     elif i.SCNum == x.SCNum:
                         MTask.objects.create(TNum=i.TNum, DetNum=i.DetNum, TName=i.TName, DetName=i.DetName,
                                              SCNum=i.SCNum, objective=i.objective, category=i.category_id, bool=i.bool,
-                                             performance=perfor,mcontents=x)
+                                             performance=perfor,mcontents=x,Dbool=0)
                         break
                     else:
                         continue
@@ -89,32 +97,48 @@ def PeDeleteView(request,pk):
 
 
 
-@api_view(['GET', 'POST'])
+@api_view(['GET', 'POST','PUT'])
 def TaskContentView(request, pk, tnum):
-    mtask = get_list_or_404(MTask, performance_id=pk, TNum=tnum)
-    mtask_serializer = MTaskSerializer(mtask, many=True)
+    mtask1 = get_list_or_404(MTask.objects.order_by('DetNum'), performance_id=pk, TNum=tnum, Dbool=0)
+    mtask2 = get_list_or_404(MTask.objects.order_by('DetNum'), performance_id=pk, TNum=tnum, Dbool=1)
+
+    mtask1_serializer = MTaskSerializer(mtask1, many=True)
+    mtask2_serializer = MTaskSerializer(mtask2, many=True)
     sc = []
     mc = []
     mcont = []
-    for i in mtask:
+    for i in mtask1:
         sc.append(i.SCNum)
         mc.append(i.mcontents_id)
 
     c = [x for x in zip(sc, mc)]
     c = dict(c)
-
+    print(c)
     for key, value in c.items():
         mcont.append(get_object_or_404(MContents, performance_id=pk, pk=value, SCNum=key))
     mcont_serializer = MContentSerializer(mcont, many=True)
-    print(type(mtask_serializer))
+    #print(type(mtask_serializer))
 
-    if request.method == 'GET':
-        s = mtask_serializer.data + mcont_serializer.data
+    if request.method == 'GET': # Contents Task Read
+        s = mtask2_serializer.data + mtask1_serializer.data + mcont_serializer.data
         return Response(s)
+
+    elif request.method == 'PUT': # Task Update
+        if mtask2_serializer.is_valid():
+            mtask2_serializer.save()
+            return Response(mtask2_serializer.data)
+        return Response(mtask2_serializer.errors, status.HTTP_400_BAD_REQUEST)
+
+
+@api_view(['GET', 'POST'])
+def UserDetailView(request, pk, tnum, id):
+    mtask1 = get_list_or_404(MTask.objects.order_by('DetNum'), performance_id=pk, TNum=tnum, Dbool=0)
+
+
 
 @api_view(['GET', 'PUT'])
 def ContentsUpdateView(request,pk,tnum,id):
-    mtask = get_list_or_404(MTask, performance_id=pk, TNum=tnum)
+    mtask = get_list_or_404(MTask, performance_id=pk, TNum=tnum,Dbool=0)
     sc = []
     mc = []
     for i in mtask:
@@ -128,12 +152,14 @@ def ContentsUpdateView(request,pk,tnum,id):
         if con.id == id:
             con_serializer = MContentSerializer(con,request.data)
             break
-    if request.method == 'PUT':
+    if request.method == 'PUT': # Contents Update
         if con_serializer.is_valid():
             con_serializer.save()
             return Response(con_serializer.data)
         return Response(con_serializer.errors, status.HTTP_400_BAD_REQUEST)
 
+#@api_view(['GET', 'PUT'])
+#def TaskUpdateView(request,pk,tnum,):
 
 
 '''def TaModifyView(request,pk):
