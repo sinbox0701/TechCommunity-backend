@@ -21,7 +21,7 @@
         {%  for performance in per_list %}
             <tr>
                 <td>{{ forloop.counter0 }}</td>
-                <td><a href="{% url 'Tech:category' pk=performance.id %}">{{ performance.title }}</a></td>
+                <td><a href="{% url 'Tech:catask' pk=performance.id %}">{{ performance.title }}</a></td>
              </tr>
         {% endfor %}
     </tbody>
