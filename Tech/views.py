@@ -78,13 +78,36 @@ def CaTaskView(request,pk):
         category_serializer = CategorySerializer(category, many=True)
         performance = get_object_or_404(Performance, pk=pk)
         performance_serializer = PerformanceSerializer(performance)
-        mtask = get_list_or_404(MTask, performance=performance)
+        mtask = get_list_or_404(MTask, performance=performance,Dbool=1)
         mtask_serializer = MTaskSerializer(mtask, many=True)
         s=[]
         s.append(performance_serializer.data)
         s = s + category_serializer.data + mtask_serializer.data
         return Response(s)
 
+@api_view(['GET','POST','DELETE'])
+def DepCreateView(request,pk):
+    performance = get_object_or_404(Performance, pk=pk)
+
+    if request.method == 'GET':
+        dep = Department.objects.filter(performance=performance)
+        dep_ser = DepartSerializer(dep, many=True)
+        return Response(dep_ser.data)
+
+    elif request.method == 'POST':
+        dep_ser = DepartSerializer(data=request.data)
+        if dep_ser.is_valid():
+            name = dep_ser.validated_data['name']
+            dep = Department.objects.create(performance=performance,name=name)
+            team = Team.objects.create(performance=performance,name=name)
+            de_ser = DepartSerializer(dep)
+            team_ser = TeamSerializer(team)
+            d=[]
+            d.append(de_ser.data)
+            d.append(team_ser.data)
+            return Response(d, status=status.HTTP_201_CREATED)
+
+    return Response(dep_ser.errors, status=status.HTTP_400_BAD_REQUEST)
 @api_view(['GET', 'DELETE'])
 def PeDeleteView(request,pk):
     try:
@@ -100,10 +123,10 @@ def PeDeleteView(request,pk):
 @api_view(['GET', 'POST','PUT'])
 def TaskContentView(request, pk, tnum):
     mtask1 = get_list_or_404(MTask.objects.order_by('DetNum'), performance_id=pk, TNum=tnum, Dbool=0)
-    mtask2 = get_list_or_404(MTask.objects.order_by('DetNum'), performance_id=pk, TNum=tnum, Dbool=1)
+    mtask2 = get_object_or_404(MTask.objects.order_by('DetNum'), performance_id=pk, TNum=tnum, Dbool=1)
 
     mtask1_serializer = MTaskSerializer(mtask1, many=True)
-    mtask2_serializer = MTaskSerializer(mtask2, many=True)
+    mtask2_serializer = MTaskSerializer(mtask2)
     sc = []
     mc = []
     mcont = []
@@ -120,19 +143,17 @@ def TaskContentView(request, pk, tnum):
     #print(type(mtask_serializer))
 
     if request.method == 'GET': # Contents Task Read
-        s = mtask2_serializer.data + mtask1_serializer.data + mcont_serializer.data
+        s=[]
+        s.append(mtask2_serializer.data)
+        s = s + mtask1_serializer.data + mcont_serializer.data
         return Response(s)
 
     elif request.method == 'PUT': # Task Update
-        if mtask2_serializer.is_valid():
-            mtask2_serializer.save()
-            return Response(mtask2_serializer.data)
-        return Response(mtask2_serializer.errors, status.HTTP_400_BAD_REQUEST)
-
-
-@api_view(['GET', 'POST'])
-def UserDetailView(request, pk, tnum, id):
-    mtask1 = get_list_or_404(MTask.objects.order_by('DetNum'), performance_id=pk, TNum=tnum, Dbool=0)
+        mtask3_serializer = MTaskSerializer(mtask2,data=request.data)
+        if mtask3_serializer.is_valid():
+            mtask3_serializer.save()
+            return Response(mtask3_serializer.data)
+        return Response(mtask3_serializer.errors, status.HTTP_400_BAD_REQUEST)
 
 
 
@@ -150,7 +171,7 @@ def ContentsUpdateView(request,pk,tnum,id):
     for key, value in c.items():
         con = (get_object_or_404(MContents, performance_id=pk, pk=value, SCNum=key))
         if con.id == id:
-            con_serializer = MContentSerializer(con,request.data)
+            con_serializer = MContentSerializer(con, data=request.data)
             break
     if request.method == 'PUT': # Contents Update
         if con_serializer.is_valid():

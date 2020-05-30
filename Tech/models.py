@@ -115,7 +115,7 @@ class MTask(models.Model):
 
     def __str__(self):
 
-        return self.performance.title + "," + str(self.id) + "," +  str(self.TNum) + "," +  self.TName
+        return self.performance.title + "," + str(self.id) + "," +  str(self.TNum) + "," + self.TName + "," + str(self.bool) + "," + str(self.Dbool)
 
 
 class DetailLog(models.Model):

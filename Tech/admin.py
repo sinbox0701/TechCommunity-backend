@@ -1,5 +1,5 @@
 from django.contrib import admin
-from .models import Department, UserDetail, Performance, DetailLog, Category, MContents, SContents,STask, MTask
+from .models import Department, UserDetail, Performance, DetailLog, Category, MContents, SContents,STask, MTask,Team
 
 # Register your models here.
 
@@ -12,4 +12,5 @@ admin.site.register(MContents)
 admin.site.register(STask)
 admin.site.register(MTask)
 admin.site.register(DetailLog)
+admin.site.register(Team)
 

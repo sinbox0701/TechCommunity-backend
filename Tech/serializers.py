@@ -39,3 +39,13 @@ class MTaskUDSerializer(serializers.Serializer):
     class Meta:
         model = MTask
         fields = ['userdetail']
+
+class DepartSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Department
+        fields = ['name']
+
+class TeamSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Team
+        fields = ['name']
