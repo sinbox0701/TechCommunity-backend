@@ -1,4 +1,6 @@
 from django.shortcuts import render, get_object_or_404, redirect,get_list_or_404
+from django.contrib import auth
+
 from .forms import *
 from .models import *
 from rest_framework import status
@@ -10,6 +12,25 @@ from .serializers import *
 
 def show(request):
     return render(request, 'base.html')
+
+@api_view(['GET', 'POST'])
+def login(request):
+    if request.method == 'POST':
+        username = request.POST.get('username','')
+        password = request.POST.get('password','')
+        user = auth.authenticate(request, username=username, password=password)
+        if user is not None:
+            us = UserSerializer(user)
+            return Response(us.data)
+        else:
+            return Response({'error':'username or password is incorrect'})
+
+
+@api_view(['GET', 'POST'])
+def logout(request):
+    if request.method == 'POST':
+        auth.logout(request)
+        return Response({'logout'})
 
 @api_view(['GET', 'POST'])
 def PeListView(request):

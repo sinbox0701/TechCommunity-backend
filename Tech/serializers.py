@@ -39,3 +39,8 @@ class MTaskUDSerializer(serializers.Serializer):
     class Meta:
         model = MTask
         fields = ['userdetail']
+
+class UserSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = settings.AUTH_USER_MODEL
+        fields = ['username','password']
