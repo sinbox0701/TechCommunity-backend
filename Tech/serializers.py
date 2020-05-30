@@ -49,3 +49,9 @@ class TeamSerializer(serializers.ModelSerializer):
     class Meta:
         model = Team
         fields = ['name']
+
+class UserSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = settings.AUTH_USER_MODEL
+        fields = ['username','password']
+
