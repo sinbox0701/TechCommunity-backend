@@ -65,6 +65,7 @@ class MContents(models.Model): # 공연별 콘텐츠에 들어갈 내용
     SCNum = models.IntegerField(null=False) # 템플릿 콘텐츠 에서 가져올 id
     SCName = models.CharField(max_length=100, null=True, blank=True) # 템플릿 콘텐츠에서 가져올 이름
     performance = models.ForeignKey(Performance, on_delete=models.CASCADE, null=True, blank=True)
+    filetype = enum.EnumField(FileType, default=FileType.text, null=True, blank=True)  # 콘텐츠 파일 타입
     tcontent = models.TextField(null=True, blank=True) # 텍스트
     fcontent = models.FileField(upload_to="files/", null=True, blank=True) # 파일
     bcontent = models.BooleanField(null=True, blank=True, default=0) # 선택사항

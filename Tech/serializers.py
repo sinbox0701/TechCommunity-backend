@@ -35,6 +35,11 @@ class MContentSerializer(serializers.ModelSerializer):
         model = MContents
         fields = '__all__'
 
+    '''def __init__(self, *args, **kwargs):
+        super(MContentSerializer, self).__init__(*args, **kwargs)
+        self.fields['fcontent'].required = False
+'''
+
 class MTaskUDSerializer(serializers.Serializer):
     class Meta:
         model = MTask
