@@ -36,7 +36,9 @@ def logout(request):
 def PeListView(request):
     if request.method == 'GET':
         per_list = Performance.objects.all()
-        serializer = PerformanceSerializer(per_list, many=True)
+        perl = per_list[1:]
+        print(perl)
+        serializer = PerformanceSerializer(perl, many=True)
         return Response(serializer.data)
 
 @api_view(['GET','POST'])
@@ -61,7 +63,7 @@ def PeCreateView(request):
             #new_user.save()
             a=[genre,title,directiont,configurationt,check,date,place,special]
             for i in scontents:
-                MContents.objects.create(performance=perfor, SCNum=i.id, SCName=i.SCName)
+                MContents.objects.create(performance=perfor, SCNum=i.id, SCName=i.SCName,filetype=i.filetype)
             MContents.objects.order_by('id')
             for i in range(0,8):
                 mc = MContents.objects.get(performance=perfor,SCNum=scontents[i].id,SCName=scontents[i].SCName)
@@ -99,7 +101,7 @@ def CaTaskView(request,pk):
         category_serializer = CategorySerializer(category, many=True)
         performance = get_object_or_404(Performance, pk=pk)
         performance_serializer = PerformanceSerializer(performance)
-        mtask = get_list_or_404(MTask, performance=performance,Dbool=1)
+        mtask = get_list_or_404(MTask.objects.order_by('TNum'), performance=performance,Dbool=1)
         mtask_serializer = MTaskSerializer(mtask, many=True)
         s=[]
         s.append(performance_serializer.data)
