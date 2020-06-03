@@ -108,7 +108,7 @@ def CaTaskView(request,pk):
         s = s + category_serializer.data + mtask_serializer.data
         return Response(s)
 
-@api_view(['GET','POST','DELETE'])
+'''@api_view(['GET','POST','DELETE'])
 def DepCreateView(request,pk):
     performance = get_object_or_404(Performance, pk=pk)
 
@@ -131,6 +131,7 @@ def DepCreateView(request,pk):
             return Response(d, status=status.HTTP_201_CREATED)
 
     return Response(dep_ser.errors, status=status.HTTP_400_BAD_REQUEST)
+    '''
 @api_view(['GET', 'DELETE'])
 def PeDeleteView(request,pk):
     try:
