@@ -2,7 +2,7 @@ from .models import *
 from django import forms
 from django.forms import ModelForm
 from .models import *
-
+'''
 class FileCForm(ModelForm):
     class Meta:
         model = MContents
@@ -11,7 +11,7 @@ class FileCForm(ModelForm):
     def __init__(self, *args, **kwargs):
         super(FileCForm, self).__init__(*args, **kwargs)
         self.fields['fcontent'].required = False
-
+'''
 class PerformanceForm(forms.ModelForm):
     class Meta:
         model = Performance
