@@ -194,17 +194,62 @@ def ContentsUpdateView(request,pk,tnum,id):
     c = dict(c)
     for key, value in c.items():
         con = (get_object_or_404(MContents, performance_id=pk, pk=value, SCNum=key))
-        if con.id == id:
-            con_serializer = MContentSerializer(con, data=request.data)
-            break
+        if con.filetype == 1:
+            confile = MContentsFile.objects.create(mcontents=con)
+            if con.id == id:
+                con_serializer = MContentSerializer(con, data=request.data)
+                confile_serializer = MContentFileSerializer(confile, data=request.data)
+                break
+        else:
+            if con.id == id:
+                con_serializer = MContentSerializer(con, data=request.data)
+                break
+
     if request.method == 'PUT': # Contents Update
-        if con_serializer.is_valid():
-            con_serializer.save()
-            return Response(con_serializer.data)
+        if con.filetype == 1:
+            if confile_serializer.is_valid():
+                confile_serializer.save()
+                if con_serializer.is_valid():
+                    con_serializer.save()
+                    s=[]
+                    s.append(con_serializer.data)
+                    s.append(confile_serializer.data)
+                    return Response(s)
+                return Response(confile_serializer.data)
+
+        else:
+            if con_serializer.is_valid():
+                con_serializer.save()
+                return Response(con_serializer.data)
         return Response(con_serializer.errors, status.HTTP_400_BAD_REQUEST)
+    #if request.method == 'POST':
+     #   confile = MContentsFile.objects.create(mcontents=con)
+
 
 #@api_view(['GET', 'PUT'])
 #def TaskUpdateView(request,pk,tnum,):
+
+
+@api_view(['GET', 'POST', 'PUT'])
+def fileupload(request,pk, tnum, id):
+    mtask = get_list_or_404(MTask, performance_id=pk, TNum=tnum, Dbool=0)
+    sc = []
+    mc = []
+    for i in mtask:
+        sc.append(i.SCNum)
+        mc.append(i.mcontents_id)
+    c = [x for x in zip(sc, mc)]
+    for key, value in c.items():
+        con = (get_object_or_404(MContents, performance_id=pk, pk=value, SCNum=key))
+        confile = get_object_or_404(MContentsFile, mcontents=con)
+        if con.id == id:
+            confile_serializer = MContentSerializer(confile, data=request.data)
+            break
+    if request.method == 'PUT':  # Contents Update
+        if confile_serializer.is_valid():
+            confile_serializer.save()
+            return Response(confile_serializer.data)
+        return Response(confile_serializer.errors, status.HTTP_400_BAD_REQUEST)
 
 
 '''def TaModifyView(request,pk):

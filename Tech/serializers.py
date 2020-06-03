@@ -30,10 +30,25 @@ class CategorySerializer(serializers.ModelSerializer):
         model = Category
         fields = '__all__'
 
+class MContentFileSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = MContentsFile
+        fields = ['fcontent']
+
 class MContentSerializer(serializers.ModelSerializer):
+    fcontents = MContentFileSerializer(many = True, read_only= True)
+
     class Meta:
         model = MContents
-        fields = '__all__'
+        fields = ['id','SCNum','SCName','performance','filetype','tcontent','bcontent','fcontents']
+
+    def create(self, validated_data):
+        fcontents_data = self.context['request'].FILES
+        mcontents = MContents.objects.create(**validated_data)
+        for fcontent_data in fcontents_data.getlist('fcontent'):
+            MContentsFile.objects.create(mcontents=mcontents,fcontent=fcontent_data)
+            print(mcontents)
+        return mcontents
 
     '''def __init__(self, *args, **kwargs):
         super(MContentSerializer, self).__init__(*args, **kwargs)

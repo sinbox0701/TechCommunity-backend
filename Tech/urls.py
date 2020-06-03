@@ -17,4 +17,5 @@ urlpatterns = [
     path('delete/<int:pk>',PeDeleteView,name='delete'),
     path('catask/<int:pk>/<int:tnum>',TaskContentView,name='catask2'),
     path('catask/<int:pk>/<int:tnum>/<int:id>', ContentsUpdateView, name='coup'),
+    path('catask/<int:pk>/<int:tnum>/<int:id>/file', fileupload, name='fileup')
 ]+ static(settings.MEDIA_URL, document_root=settings.MEDIA_URL)
