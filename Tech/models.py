@@ -36,9 +36,10 @@ class UserDetail(models.Model):
     user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, null=True, blank=True)
     performance = models.ForeignKey(Performance, on_delete=models.CASCADE, null=True, blank=True)
     department = models.ForeignKey(Department, on_delete=models.CASCADE, null=True, blank=True)
+    TNum = models.IntegerField(null=True, blank=True)
 
     def __str__(self):
-        return self.user.username + "," + self.performance.title + "," + self.department.name
+        return self.user.username + "," + self.performance.title #+ "," + self.department.name
 
 class FileType(enum.Enum):
     text = 0

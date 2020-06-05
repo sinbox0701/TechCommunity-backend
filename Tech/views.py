@@ -1,6 +1,7 @@
 from django.shortcuts import render, get_object_or_404, redirect,get_list_or_404
 from django.contrib import auth
-
+from Log.models import *
+from Log.serializers import *
 from .forms import *
 from .models import *
 from rest_framework import status
@@ -16,12 +17,17 @@ def show(request):
 @api_view(['GET', 'POST'])
 def login(request):
     if request.method == 'POST':
-        username = request.POST.get('username','')
-        password = request.POST.get('password','')
+        username = request.data['Username']
+        password = request.data['Password']
+        print(request.data)
+        print(username)
         user = auth.authenticate(request, username=username, password=password)
+        print(user)
         if user is not None:
-            us = UserSerializer(user)
-            return Response(us.data)
+            #us_v = {'Username':username, 'Password':password}
+            #us = UserSerializer(request.data)
+            #print(us)
+            return Response(request.data)
         else:
             return Response({'error':'username or password is incorrect'})
 
@@ -154,9 +160,18 @@ def TaskContentView(request, pk, tnum):
     sc = []
     mc = []
     mcont = []
+    dl = []
+   # delog = DetailLog.objects.filter(performance_id=pk).order_by('date')
     for i in mtask1:
         sc.append(i.SCNum)
         mc.append(i.mcontents_id)
+        #if DetailLog.objects.filter(performance_id=pk, mc=i.mcontents_id) is not None:
+            #d = get_list_or_404(DetailLog, performance_id=pk, mc=i.mcontents_id)
+            #dl = dl + d
+    #print(dl)
+    #dl.sort(key=dl.date)
+    #print(dl)
+    #dl_serializer = DetailLogSerialzier(dl, many=True)
 
     c = [x for x in zip(sc, mc)]
     c = dict(c)
@@ -169,7 +184,7 @@ def TaskContentView(request, pk, tnum):
     if request.method == 'GET': # Contents Task Read
         s=[]
         s.append(mtask2_serializer.data)
-        s = s + mtask1_serializer.data + mcont_serializer.data
+        s = s  + mtask1_serializer.data + mcont_serializer.data
         return Response(s)
 
     elif request.method == 'PUT': # Task Update
@@ -211,16 +226,33 @@ def ContentsUpdateView(request,pk,tnum,id):
                 confile_serializer.save()
                 if con_serializer.is_valid():
                     con_serializer.save()
+                    t = get_object_or_404(MTask, performance_id=pk, mcontents_id=value, SCNum=key, TNum=tnum)
+                    print(request.user)
+                    ud = get_object_or_404(UserDetail, user_id=request.user, performance_id=pk, TNum=None)
+                    print(ud)
+                    dlog = DetailLog.objects.create(performance_id=pk, mtask=t, userdetail=ud, mc=t.mcontents_id)
+                    dlog.save()
+                   # dlog_serializer = DetailLogSerializer(dlog)
                     s=[]
                     s.append(con_serializer.data)
                     s.append(confile_serializer.data)
+                  #  s.append(dlog_serializer)
                     return Response(s)
                 return Response(confile_serializer.data)
-
+            return Response(con_serializer.errors, status.HTTP_400_BAD_REQUEST)
         else:
             if con_serializer.is_valid():
                 con_serializer.save()
-                return Response(con_serializer.data)
+                t = get_object_or_404(MTask, performance_id=pk, mcontents_id=value, SCNum=key, TNum=tnum)
+                print(request.user)
+                ud = get_object_or_404(UserDetail, user=request.user, performance_id=pk, TNum=None)
+                dlog = DetailLog.objects.create(performance_id=pk, mtask=t, userdetail=ud, mc=t.mcontents_id)
+                dlog.save()
+                #dlog_serializer = DetailLogSerializer(dlog)
+                s = []
+                s.append(con_serializer.data)
+                #s.append(dlog_serializer)
+                return Response(s)
         return Response(con_serializer.errors, status.HTTP_400_BAD_REQUEST)
     #if request.method == 'POST':
      #   confile = MContentsFile.objects.create(mcontents=con)
