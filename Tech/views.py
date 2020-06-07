@@ -153,38 +153,42 @@ def PeDeleteView(request,pk):
 @api_view(['GET', 'POST','PUT'])
 def TaskContentView(request, pk, tnum):
     mtask1 = get_list_or_404(MTask.objects.order_by('DetNum'), performance_id=pk, TNum=tnum, Dbool=0)
+    print(mtask1)
     mtask2 = get_object_or_404(MTask.objects.order_by('DetNum'), performance_id=pk, TNum=tnum, Dbool=1)
 
     mtask1_serializer = MTaskSerializer(mtask1, many=True)
     mtask2_serializer = MTaskSerializer(mtask2)
     sc = []
-    mc = []
+    mcc = []
     mcont = []
     dl = []
-   # delog = DetailLog.objects.filter(performance_id=pk).order_by('date')
+    delog = DetailLog.objects.filter(performance_id=pk).order_by('date')
     for i in mtask1:
         sc.append(i.SCNum)
-        mc.append(i.mcontents_id)
-        #if DetailLog.objects.filter(performance_id=pk, mc=i.mcontents_id) is not None:
-            #d = get_list_or_404(DetailLog, performance_id=pk, mc=i.mcontents_id)
-            #dl = dl + d
-    #print(dl)
-    #dl.sort(key=dl.date)
-    #print(dl)
-    #dl_serializer = DetailLogSerialzier(dl, many=True)
+        mcc.append(i.mcontents_id)
+        dd = delog.filter(mc=i.mcontents_id)
+        dl = dl +list(dd)
+        print(dd)
+        print(dl)
 
-    c = [x for x in zip(sc, mc)]
+    dl.sort(key=lambda object: object.date)
+    dl_serializer = DetailLogSerializer(dl, many=True)
+
+    c = [x for x in zip(sc, mcc)]
     c = dict(c)
     print(c)
     for key, value in c.items():
         mcont.append(get_object_or_404(MContents, performance_id=pk, pk=value, SCNum=key))
     mcont_serializer = MContentSerializer(mcont, many=True)
     #print(type(mtask_serializer))
+    userd = get_object_or_404(UserDetail, user=request.user)
+    com = get_list_or_404(Comment.objects.order_by('create'), performance_id=pk, TNum=tnum)
+    com_serializer = CommentSerializer(com, many=True)
 
     if request.method == 'GET': # Contents Task Read
         s=[]
         s.append(mtask2_serializer.data)
-        s = s  + mtask1_serializer.data + mcont_serializer.data
+        s = s + dl_serializer.data + mtask1_serializer.data + mcont_serializer.data + com_serializer.data
         return Response(s)
 
     elif request.method == 'PUT': # Task Update
@@ -239,7 +243,7 @@ def ContentsUpdateView(request,pk,tnum,id):
                   #  s.append(dlog_serializer)
                     return Response(s)
                 return Response(confile_serializer.data)
-            return Response(con_serializer.errors, status.HTTP_400_BAD_REQUEST)
+            return Response(confile_serializer.errors, status.HTTP_400_BAD_REQUEST)
         else:
             if con_serializer.is_valid():
                 con_serializer.save()
@@ -253,7 +257,7 @@ def ContentsUpdateView(request,pk,tnum,id):
                 s.append(con_serializer.data)
                 #s.append(dlog_serializer)
                 return Response(s)
-        return Response(con_serializer.errors, status.HTTP_400_BAD_REQUEST)
+            return Response(con_serializer.errors, status.HTTP_400_BAD_REQUEST)
     #if request.method == 'POST':
      #   confile = MContentsFile.objects.create(mcontents=con)
 
@@ -262,6 +266,35 @@ def ContentsUpdateView(request,pk,tnum,id):
 #def TaskUpdateView(request,pk,tnum,):
 
 
+@api_view(['GET','POST'])
+def comment(request,pk,tnum):
+    #mtask = get_object_or_404(MTask, performance_id=pk, TNum=tnum, Dbool=1)
+    #comment = Comment.objects.filter(TNum=mtask.TNum)
+    userd = get_object_or_404(UserDetail, user=request.user)
+
+    if request.method == 'POST':
+        comment = Comment.objects.create(performance_id=pk, TNum=tnum, userdetail=userd, username=request.user.username)
+        print(request.user.username)
+        print('dddddddddd')
+        comment_serializer = CommentSerializer(comment, data=request.data)
+        if comment_serializer.is_valid():
+            comment_serializer.save()
+            return Response(comment_serializer.data)
+        return Response(comment_serializer.errors,status.HTTP_400_BAD_REQUEST)
+
+@api_view(['GET','POST'])
+def comment_reply(request,pk,tnum,id):
+    userd = UserDetail.objects.get(user=request.user)
+    if request.method == 'POST':
+        comment = Comment.objects.create(performance_id=pk, TNum=tnum, userdetail=userd, parent_id=id,  username=request.user.username)
+        comment_serializer = CommentSerializer(comment, data=request.data)
+        if comment_serializer.is_valid():
+            comment_serializer.save()
+            return Response(comment_serializer.data)
+        return Response(comment_serializer.errors, status.HTTP_400_BAD_REQUEST)
+
+
+'''
 @api_view(['GET', 'POST', 'PUT'])
 def fileupload(request,pk, tnum, id):
     mtask = get_list_or_404(MTask, performance_id=pk, TNum=tnum, Dbool=0)
@@ -282,7 +315,7 @@ def fileupload(request,pk, tnum, id):
             confile_serializer.save()
             return Response(confile_serializer.data)
         return Response(confile_serializer.errors, status.HTTP_400_BAD_REQUEST)
-
+'''
 
 '''def TaModifyView(request,pk):
     mtask = get_object_or_404(MTask,pk=pk)
