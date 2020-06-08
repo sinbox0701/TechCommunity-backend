@@ -206,6 +206,7 @@ def ContentsUpdateView(request,pk,tnum,id):
                 break
 
     if request.method == 'PUT': # Contents Update
+        print(con.filetype)
         if con.filetype == 1:
             if confile_serializer.is_valid():
                 confile_serializer.save()
@@ -216,12 +217,12 @@ def ContentsUpdateView(request,pk,tnum,id):
                     s.append(confile_serializer.data)
                     return Response(s)
                 return Response(confile_serializer.data)
-
+            return Response(confile_serializer.errors, status.HTTP_400_BAD_REQUEST)
         else:
             if con_serializer.is_valid():
                 con_serializer.save()
                 return Response(con_serializer.data)
-        return Response(con_serializer.errors, status.HTTP_400_BAD_REQUEST)
+            return Response(con_serializer.errors, status.HTTP_400_BAD_REQUEST)
     #if request.method == 'POST':
      #   confile = MContentsFile.objects.create(mcontents=con)
 
