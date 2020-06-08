@@ -36,9 +36,10 @@ class UserDetail(models.Model):
     user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, null=True, blank=True)
     performance = models.ForeignKey(Performance, on_delete=models.CASCADE, null=True, blank=True)
     department = models.ForeignKey(Department, on_delete=models.CASCADE, null=True, blank=True)
+    TNum = models.IntegerField(null=True, blank=True)
 
     def __str__(self):
-        return self.user.username + "," + self.performance.title + "," + self.department.name
+        return self.user.username + "," + self.performance.title #+ "," + self.department.name
 
 class FileType(enum.Enum):
     text = 0
@@ -120,11 +121,12 @@ class MTask(models.Model):
 class Comment(models.Model):
     performance = models.ForeignKey(Performance, on_delete=models.CASCADE, null=True, blank=True)
     userdetail = models.ForeignKey(UserDetail, on_delete=models.CASCADE, null=True, blank=True)
+    username = models.CharField(max_length=100, null=True, blank=True)
     parent = models.ForeignKey('self', related_name='reply', on_delete=models.CASCADE, null=True, blank=True)
     create = models.DateTimeField(auto_now_add=True)
     update = models.DateTimeField(auto_now=True)
     text = models.TextField()
-    TNum = models.IntegerField()
+    TNum = models.IntegerField(null=True, blank=True)
 
     def __str__(self):
         return self.performance.title + "," + str(self.TNum)
