@@ -15,9 +15,11 @@ django-enumfield==2.0.1
 django-environ==0.4.5
 django-extensions==2.1.9
 django-redis==4.10.0
+django-stubs==1.5.0
 django-webpack-loader==0.7.0
 django-widget-tweaks==1.4.5
 djangorestframework==3.11.0
+djangorestframework-jwt==1.11.0
 djangorestframework-stubs==1.1.0
 flake8==3.6.0
 flake8-blind-except==0.1.1
@@ -29,6 +31,8 @@ ipython-genutils==0.2.0
 isort==4.3.21
 jedi==0.14.1
 mccabe==0.6.1
+mypy==0.770
+mypy-extensions==0.4.3
 oauthlib==3.1.0
 parso==0.5.1
 pickleshare==0.7.5
@@ -40,6 +44,7 @@ pycountry==18.12.8
 pycparser==2.20
 pyflakes==2.0.0
 Pygments==2.4.2
+PyJWT==1.7.1
 PyMySQL==0.9.3
 pyprof2calltree==1.4.4
 pysolr==3.7.0
@@ -51,6 +56,8 @@ requests-oauthlib==1.3.0
 six==1.12.0
 sqlparse==0.3.0
 traitlets==4.3.2
+typed-ast==1.4.1
+typing-extensions==3.7.4.2
 urllib3==1.25.3
 wcwidth==0.1.7
 Werkzeug==0.15.4

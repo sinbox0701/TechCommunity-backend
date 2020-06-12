@@ -65,9 +65,13 @@ class DepartSerializer(serializers.ModelSerializer):
         model = Department
         fields = ['name']
 
-
 class UserSerializer(serializers.ModelSerializer):
     class Meta:
         model = settings.AUTH_USER_MODEL
         fields = ['username','password']
 
+class CommentSerializer(serializers.ModelSerializer):
+
+    class Meta:
+        model = Comment
+        fields = '__all__'
