@@ -203,8 +203,6 @@ def TaskContentView(request, pk, tnum):
         mcc.append(i.mcontents_id)
         dd = delog.filter(mc=i.mcontents_id)
         dl = dl +list(dd)
-        print(dd)
-        print(dl)
 
     dl.sort(key=lambda object: object.date)
     dl_serializer = DetailLogSerializer(dl, many=True)
@@ -214,10 +212,12 @@ def TaskContentView(request, pk, tnum):
     print(c)
     for key, value in c.items():
         mcont.append(get_object_or_404(MContents, performance_id=pk, pk=value, SCNum=key))
+
     mcont_serializer = MContentSerializer(mcont, many=True)
     #print(type(mtask_serializer))
-    userd = get_object_or_404(UserDetail, user=request.user)
-    com = get_list_or_404(Comment.objects.order_by('create'), performance_id=pk, TNum=tnum)
+    #userd = get_object_or_404(UserDetail, user=request.user)
+    com = Comment.objects.filter(performance_id=pk, TNum=tnum).order_by('create')
+    print("dddd")
     com_serializer = CommentSerializer(com, many=True)
 
     if request.method == 'GET': # Contents Task Read
@@ -309,6 +309,12 @@ def ContentsUpdateView(request,pk,tnum,id):
         else:
             if con_serializer.is_valid():
                 con_serializer.save()
+                t = get_object_or_404(MTask, performance_id=pk, mcontents_id=value, SCNum=key, TNum=tnum)
+                print(request.user)
+                ud = get_object_or_404(UserDetail, user_id=request.user, performance_id=pk, TNum=None)
+                print(ud)
+                dlog = DetailLog.objects.create(performance_id=pk, mtask=t, userdetail=ud, mc=t.mcontents_id)
+                dlog.save()
                 return Response(con_serializer.data)
             return Response(con_serializer.errors, status.HTTP_400_BAD_REQUEST)
     #if request.method == 'POST':
@@ -325,13 +331,7 @@ def comment(request,pk,tnum):
     #comment = Comment.objects.filter(TNum=mtask.TNum)
     userd = get_object_or_404(UserDetail, user=request.user)
 
-    if request.method == 'GET':
-        com = get_list_or_404(Comment, performance_id=pk, TNum=tnum)
-        com_ser = CommentSerializer(com, many=True)
-
-        return Response(com_ser.data)
-
-    elif request.method == 'POST':
+    if request.method == 'POST':
         comment = Comment.objects.create(performance_id=pk, TNum=tnum, userdetail=userd, username=request.user.username)
         print(request.user.username)
         print('dddddddddd')
@@ -352,7 +352,21 @@ def comment_reply(request,pk,tnum,id):
             return Response(comment_serializer.data)
         return Response(comment_serializer.errors, status.HTTP_400_BAD_REQUEST)
 
-@api_view(['GET', 'POST', 'DELETE'])
+@api_view(['GET','PUT'])
+def comment_Update(request,pk,tnum,id):
+    com = get_object_or_404(Comment, performance_id=pk, TNum=tnum, id=id)
+    if com.username == request.user.username:
+        if request.method == 'PUT':
+            com_ser = CommentSerializer(com, data=request.data)
+            if com_ser.is_valid():
+                com_ser.save()
+                return Response(com_ser.data)
+            return Response(com_ser.errors, status.HTTP_400_BAD_REQUEST)
+    else:
+        return Response({'error': 'No user rights.'})
+
+
+@api_view(['GET', 'DELETE'])
 def comment_delete(request, pk, tnum, id):
     try:
         comment = Comment.objects.get(performance_id=pk, TNum=tnum, id=id)
@@ -383,74 +397,17 @@ def fileupload(request,pk, tnum, id):
             return Response(confile_serializer.data)
         return Response(confile_serializer.errors, status.HTTP_400_BAD_REQUEST)
 '''
+@api_view(['GET', 'PUT'])
+def TaskMod(request,pk,tnum):
+    mtask = get_object_or_404(MTask, performance_id=pk, TNum=tnum, Dbool=1)
+    if request.method == "PUT":
+        mt_s = MTaskSerializer(mtask, data=request.data)
+        if mt_s.is_valid():
+            mt_s.save()
+            return Response(mt_s.data)
+        return Response(mt_s.errors, status.HTTP_400_BAD_REQUEST)
 
-'''def TaModifyView(request,pk):
-    mtask = get_object_or_404(MTask,pk=pk)
-    if request.method == "POST":'''
+#@api_view(['GET', 'POST'])
+#def TaskUserTeam(request,pk,tnum):
 
-'''mlist = []
-       ml = []
-       for i in mtask_serializer:
-           if i.TNum not in mlist:
-               mlist.append(i.TNum)
-               ml.append(i)
-           else:
-               continue
-       max=0
-       zero =[]
-       one=[]
-       two=[]
-       three=[]
-       four=[]
 
-       for i in ml:
-           if i.category == category[0].id:
-               zero.append(i)
-           elif i.category == category[1].id:
-               one.append(i)
-           elif i.category == category[2].id:
-               two.append(i)
-           elif i.category == category[3].id:
-               three.append(i)
-           elif i.category == category[4].id:
-               four.append(i)
-       list = []
-       list.append(len(zero))
-       list.append(len(one))
-       list.append(len(two))
-       list.append(len(three))
-       list.append(len(four))
-
-       for i in range(0,5):
-           if max < list[i]:
-               max = list[i]
-       list.append(int(max))
-       act=[]
-       for i in range(0,max):
-           if i >= len(zero):
-               act.append('')
-           else:
-               act.append(zero[i])
-           if i >= len(one):
-               act.append('')
-           else:
-               act.append(one[i])
-           if i >= len(two):
-               act.append('')
-           else:
-               act.append(two[i])
-           if i >= len(three):
-               act.append('')
-           else:
-               act.append(three[i])
-           if i >= len(four):
-               act.append('')
-           else:
-               act.append(four[i])
-
-       a=[act[i*5:(i+1)*5] for i in range((len(act)+4)//5)]
-       l=[]
-       for i in range(0,max):
-           l.append(int(i))
-
-       context = {'category':category, 'performance':performance, 'mtask':mtask,'act':act,'a':a,'l':l}'''
