@@ -233,7 +233,33 @@ def TaskContentView(request, pk, tnum):
             return Response(mtask3_serializer.data)
         return Response(mtask3_serializer.errors, status.HTTP_400_BAD_REQUEST)
 
+'''
+@api_view(['GET', 'POST'])
+def DetailCreateView(request, pk, tnum):
+    mtask1 = get_list_or_404(MTask.objects.order_by('DetNum'), performance_id=pk, TNum=tnum, Dbool=0)
+    detn = mtask1[0].DetNum
+    mt1 = get_list_or_404(MTask.objects.order_by('id'),performance_id=pk, DetNum=detn ,Dbool=0)
+    sc=[]
+    mcc=[]
+    for i in mtask1:
+        sc.append(i.SCNum)
+        mcc.append(i.mcontents_id)
 
+    c = [x for x in zip(sc, mcc)]
+    c = dict(c)
+    mcont=[]
+    for key, value in c.items():
+        mcont.append(get_object_or_404(MContents, performance_id=pk, pk=value, SCNum=key))
+    mc = get_list_or_404(MContents.objects.order_by('SCNum'), performance_id=pk)
+    mc1 = mc[-1].SCNum
+    x=1
+    mc2 =[]
+    mt2=[]
+    if request.method == 'POST':
+        for i in mcont:
+            mc2.append(MContents.objects.create(performance_id=pk, SCNum=mc1+x, SCName=i.SCName, filetype=i.filetype))
+            mt2.append(MTask.objects.create(performance_id=pk, TNum=tnum, ,SCNum=mc2[x-1].SCNum, mcontents=))
+'''
 
 @api_view(['GET', 'PUT'])
 def ContentsUpdateView(request,pk,tnum,id):
@@ -260,6 +286,7 @@ def ContentsUpdateView(request,pk,tnum,id):
                 break
 
     if request.method == 'PUT': # Contents Update
+        print(con.filetype)
         if con.filetype == 1:
             if confile_serializer.is_valid():
                 confile_serializer.save()
@@ -282,16 +309,7 @@ def ContentsUpdateView(request,pk,tnum,id):
         else:
             if con_serializer.is_valid():
                 con_serializer.save()
-                t = get_object_or_404(MTask, performance_id=pk, mcontents_id=value, SCNum=key, TNum=tnum)
-                print(request.user)
-                ud = get_object_or_404(UserDetail, user=request.user, performance_id=pk, TNum=None)
-                dlog = DetailLog.objects.create(performance_id=pk, mtask=t, userdetail=ud, mc=t.mcontents_id)
-                dlog.save()
-                #dlog_serializer = DetailLogSerializer(dlog)
-                s = []
-                s.append(con_serializer.data)
-                #s.append(dlog_serializer)
-                return Response(s)
+                return Response(con_serializer.data)
             return Response(con_serializer.errors, status.HTTP_400_BAD_REQUEST)
     #if request.method == 'POST':
      #   confile = MContentsFile.objects.create(mcontents=con)
@@ -307,7 +325,13 @@ def comment(request,pk,tnum):
     #comment = Comment.objects.filter(TNum=mtask.TNum)
     userd = get_object_or_404(UserDetail, user=request.user)
 
-    if request.method == 'POST':
+    if request.method == 'GET':
+        com = get_list_or_404(Comment, performance_id=pk, TNum=tnum)
+        com_ser = CommentSerializer(com, many=True)
+
+        return Response(com_ser.data)
+
+    elif request.method == 'POST':
         comment = Comment.objects.create(performance_id=pk, TNum=tnum, userdetail=userd, username=request.user.username)
         print(request.user.username)
         print('dddddddddd')
@@ -321,14 +345,22 @@ def comment(request,pk,tnum):
 def comment_reply(request,pk,tnum,id):
     userd = UserDetail.objects.get(user=request.user)
     if request.method == 'POST':
-        comment = Comment.objects.create(performance_id=pk, TNum=tnum, userdetail=userd, parent_id=id,  username=request.user.username)
+        comment = Comment.objects.create(performance_id=pk, TNum=tnum, userdetail=userd, parent_id=id, username=request.user.username)
         comment_serializer = CommentSerializer(comment, data=request.data)
         if comment_serializer.is_valid():
             comment_serializer.save()
             return Response(comment_serializer.data)
         return Response(comment_serializer.errors, status.HTTP_400_BAD_REQUEST)
 
-
+@api_view(['GET', 'POST', 'DELETE'])
+def comment_delete(request, pk, tnum, id):
+    try:
+        comment = Comment.objects.get(performance_id=pk, TNum=tnum, id=id)
+    except Comment.DoesNotExist:
+        return Response(status=status.HTTP_404_NOT_FOUND)
+    if request.method == 'DELETE':
+        comment.delete()
+        return Response(status=status.HTTP_204_NO_CONTENT)
 '''
 @api_view(['GET', 'POST', 'PUT'])
 def fileupload(request,pk, tnum, id):
