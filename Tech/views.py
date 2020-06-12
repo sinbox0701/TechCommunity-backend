@@ -325,7 +325,13 @@ def comment(request,pk,tnum):
     #comment = Comment.objects.filter(TNum=mtask.TNum)
     userd = get_object_or_404(UserDetail, user=request.user)
 
-    if request.method == 'POST':
+    if request.method == 'GET':
+        com = get_list_or_404(Comment, performance_id=pk, TNum=tnum)
+        com_ser = CommentSerializer(com, many=True)
+
+        return Response(com_ser.data)
+
+    elif request.method == 'POST':
         comment = Comment.objects.create(performance_id=pk, TNum=tnum, userdetail=userd, username=request.user.username)
         print(request.user.username)
         print('dddddddddd')
