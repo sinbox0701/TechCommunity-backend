@@ -352,7 +352,15 @@ def comment_reply(request,pk,tnum,id):
             return Response(comment_serializer.data)
         return Response(comment_serializer.errors, status.HTTP_400_BAD_REQUEST)
 
-
+@api_view(['GET', 'POST', 'DELETE'])
+def comment_delete(request, pk, tnum, id):
+    try:
+        comment = Comment.objects.get(performance_id=pk, TNum=tnum, id=id)
+    except Comment.DoesNotExist:
+        return Response(status=status.HTTP_404_NOT_FOUND)
+    if request.method == 'DELETE':
+        comment.delete()
+        return Response(status=status.HTTP_204_NO_CONTENT)
 '''
 @api_view(['GET', 'POST', 'PUT'])
 def fileupload(request,pk, tnum, id):
