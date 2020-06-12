@@ -274,6 +274,7 @@ def ContentsUpdateView(request,pk,tnum,id):
     c = dict(c)
     for key, value in c.items():
         con = (get_object_or_404(MContents, performance_id=pk, pk=value, SCNum=key))
+        tname = con.tcontent
         if con.filetype == 1:
             confile = MContentsFile.objects.create(mcontents=con)
             if con.id == id:
@@ -296,7 +297,8 @@ def ContentsUpdateView(request,pk,tnum,id):
                     print(request.user)
                     ud = get_object_or_404(UserDetail, user_id=request.user, performance_id=pk, TNum=None)
                     print(ud)
-                    dlog = DetailLog.objects.create(performance_id=pk, mtask=t, userdetail=ud, mc=t.mcontents_id)
+                    mod = t.DetName + " 의 " + con.SCName + " 에 " +  " 파일이 업로드 되었습니다."
+                    dlog = DetailLog.objects.create(performance_id=pk, mtask=t, userdetail=ud, mc=t.mcontents_id, mod=mod,username=request.user.username)
                     dlog.save()
                    # dlog_serializer = DetailLogSerializer(dlog)
                     s=[]
@@ -313,7 +315,8 @@ def ContentsUpdateView(request,pk,tnum,id):
                 print(request.user)
                 ud = get_object_or_404(UserDetail, user_id=request.user, performance_id=pk, TNum=None)
                 print(ud)
-                dlog = DetailLog.objects.create(performance_id=pk, mtask=t, userdetail=ud, mc=t.mcontents_id)
+                mod = t.DetName + " 의 " + con.SCName + " 가(이) " + tname + " 에서 " + con.tcontent + " 로 변경 되었습니다."
+                dlog = DetailLog.objects.create(performance_id=pk, mtask=t, userdetail=ud, mc=t.mcontents_id,mod=mod,username=request.user.username)
                 dlog.save()
                 return Response(con_serializer.data)
             return Response(con_serializer.errors, status.HTTP_400_BAD_REQUEST)
@@ -407,7 +410,32 @@ def TaskMod(request,pk,tnum):
             return Response(mt_s.data)
         return Response(mt_s.errors, status.HTTP_400_BAD_REQUEST)
 
-#@api_view(['GET', 'POST'])
-#def TaskUserTeam(request,pk,tnum):
+@api_view(['GET', 'POST'])
+def TaskUserCreate(request,pk,tnum):
+
+    if request.method == "POST":
+        #u = get_object_or_404(UserDetail,)
+        ud = UserDetail.objects.create(performance_id=pk, TNum=tnum)
+        ud_s = UserDetailSerializer(ud,data=request.data)
+        if ud_s.is_valid():
+            ud_s.save()
+            return Response(ud_s.data)
+        return Response(ud_s.errors, status.HTTP_400_BAD_REQUEST)
+
+@api_view(['GET', 'POST'])
+def TaskTeamCreate(request, pk, tnum):
+
+    if request.method == "POST":
+        tt =TaskTeam.objects.create(performance_id=pk, TNum=tnum)
+
+        tt_s = TaskTeamSerializer(tt, data=request.data)
+        if tt_s.is_valid():
+            tt_s.save()
+            return Response(tt_s.data)
+        return Response(tt_s.errors, status.HTTP_400_BAD_REQUEST)
+'''
+@api_view(['GET', 'POST'])
+def fileRead(request, pk, tnum):
+    if request.method == "GET":'''
 
 
