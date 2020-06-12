@@ -9,6 +9,8 @@ app_name = 'Tech'
 
 urlpatterns = [
     path('', PeListView, name='list'),
+    path('current_user/', current_user),
+    path('users/', UserList.as_view()),
     path('login/', login, name='login'),
     path('logout/', logout, name='logout'),
     path('add/', PeCreateView, name='add'),
