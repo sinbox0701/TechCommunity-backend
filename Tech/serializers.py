@@ -105,3 +105,13 @@ class CommentSerializer(serializers.ModelSerializer):
     class Meta:
         model = Comment
         fields = '__all__'
+
+class TaskTeamSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = TaskTeam
+        fields = '__all__'
+
+class UserDetailSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = UserDetail
+        fields = '__all__'
