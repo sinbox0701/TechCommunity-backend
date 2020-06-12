@@ -217,7 +217,7 @@ def TaskContentView(request, pk, tnum):
     mcont_serializer = MContentSerializer(mcont, many=True)
     #print(type(mtask_serializer))
     userd = get_object_or_404(UserDetail, user=request.user)
-    com = get_list_or_404(Comment.objects.order_by('create'), performance_id=pk, TNum=tnum)
+    com = Comment.objects.filter(performance_id=pk, TNum=tnum).order_by('create')
     com_serializer = CommentSerializer(com, many=True)
 
     if request.method == 'GET': # Contents Task Read
@@ -306,6 +306,11 @@ def comment(request,pk,tnum):
     #mtask = get_object_or_404(MTask, performance_id=pk, TNum=tnum, Dbool=1)
     #comment = Comment.objects.filter(TNum=mtask.TNum)
     userd = get_object_or_404(UserDetail, user=request.user)
+    if request.method == 'GET':
+        com = get_list_or_404(Comment, performance_id=pk, TNum=tnum)
+        com_ser = CommentSerializer(com, many=True)
+
+        return Response(com_ser.data)
 
     if request.method == 'POST':
         comment = Comment.objects.create(performance_id=pk, TNum=tnum, userdetail=userd, username=request.user.username)
@@ -316,6 +321,7 @@ def comment(request,pk,tnum):
             comment_serializer.save()
             return Response(comment_serializer.data)
         return Response(comment_serializer.errors,status.HTTP_400_BAD_REQUEST)
+
 
 @api_view(['GET','POST'])
 def comment_reply(request,pk,tnum,id):
