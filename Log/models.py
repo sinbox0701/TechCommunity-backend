@@ -13,5 +13,8 @@ class DetailLog(models.Model):
     date = models.DateTimeField(auto_now_add=True, null=True, blank=True)
     mc = models.IntegerField(null=True, blank=True)
 
+    def datepublished(self):
+        return self.date.strftime('%m/%d/%y %H:%M')
+
     def __str__(self):
         return self.performance.title + self.userdetail.user.username
