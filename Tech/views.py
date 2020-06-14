@@ -275,9 +275,11 @@ def ContentsUpdateView(request,pk,tnum,id):
     for key, value in c.items():
         con = (get_object_or_404(MContents, performance_id=pk, pk=value, SCNum=key))
         tname = con.tcontent
+        t = get_object_or_404(MTask, performance_id=pk, mcontents_id=value, SCNum=key, TNum=tnum)
         if con.filetype == 1:
-            confile = MContentsFile.objects.create(mcontents=con)
             if con.id == id:
+                st = t.DetName + " 의 " + con.SCName + " 에 업로드된 파일입니다."
+                confile = MContentsFile.objects.create(mcontents=con, storage=st, performance_id=pk)
                 con_serializer = MContentSerializer(con, data=request.data)
                 confile_serializer = MContentFileSerializer(confile, data=request.data)
                 break
@@ -332,7 +334,7 @@ def ContentsUpdateView(request,pk,tnum,id):
 def comment(request,pk,tnum):
     #mtask = get_object_or_404(MTask, performance_id=pk, TNum=tnum, Dbool=1)
     #comment = Comment.objects.filter(TNum=mtask.TNum)
-    userd = get_object_or_404(UserDetail, user=request.user)
+    userd = get_object_or_404(UserDetail, user=request.user, TNum=None)
 
     if request.method == 'POST':
         comment = Comment.objects.create(performance_id=pk, TNum=tnum, userdetail=userd, username=request.user.username)
@@ -433,9 +435,21 @@ def TaskTeamCreate(request, pk, tnum):
             tt_s.save()
             return Response(tt_s.data)
         return Response(tt_s.errors, status.HTTP_400_BAD_REQUEST)
-'''
+
 @api_view(['GET', 'POST'])
-def fileRead(request, pk, tnum):
-    if request.method == "GET":'''
+def fileRead(request, pk):
+    mcs= []
+    mf = MContentsFile.objects.filter(performance_id=pk)
+
+    for i in mf:
+        mi=i.mcontents_id
+        mcs.append(MContents.objects.get(performance_id=pk, filetype=1, id=mi))
+        print(i.id)
+
+    if request.method == "GET":
+        mf_s =MContentFileSerializer(mf, many=True)
+        mc_s =MContentSerializer(mcs, many=True)
+        return Response(mf_s.data+mc_s.data)
+
 
 

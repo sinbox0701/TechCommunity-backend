@@ -17,6 +17,7 @@ urlpatterns = [
     path('catask/<int:pk>', CaTaskView, name='catask1'),
     #path('catask/dep/<int:pk>', DepCreateView, name='dep'),
     path('delete/<int:pk>',PeDeleteView,name='delete'),
+    path('catask/<int:pk>/file',fileRead,name='FR'),
     path('catask/<int:pk>/<int:tnum>',TaskContentView,name='catask2'),
     path('catask/<int:pk>/<int:tnum>/mod',TaskMod,name='TaskMod'),
     path('catask/<int:pk>/<int:tnum>/user',TaskUserCreate,name='TaskUser'),

@@ -71,6 +71,8 @@ class MContents(models.Model): # 공연별 콘텐츠에 들어갈 내용
 class MContentsFile(models.Model):
     mcontents = models.ForeignKey(MContents, on_delete=models.CASCADE)
     fcontent = models.FileField(upload_to="files/", null=True, blank=True)
+    performance = models.ForeignKey(Performance, on_delete=models.CASCADE,null=True,blank=True)
+    storage = models.CharField(max_length=1000, null=True, blank=True)
 
     def __str__(self):
         return str(self.mcontents.SCName) + "," + str(self.fcontent)
@@ -127,6 +129,7 @@ class Comment(models.Model):
     update = models.DateTimeField(auto_now=True)
     text = models.TextField()
     TNum = models.IntegerField(null=True, blank=True)
+
 
     def __str__(self):
         return self.performance.title + "," + str(self.TNum)

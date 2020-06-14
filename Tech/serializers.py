@@ -35,10 +35,15 @@ class CategorySerializer(serializers.ModelSerializer):
 class MContentFileSerializer(serializers.ModelSerializer):
     class Meta:
         model = MContentsFile
+        fields = '__all__'
+
+class MFileSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = MContentsFile
         fields = ['fcontent']
 
 class MContentSerializer(serializers.ModelSerializer):
-    fcontents = MContentFileSerializer(many = True, read_only= True)
+    fcontents = MFileSerializer(many = True, read_only= True)
 
     class Meta:
         model = MContents
