@@ -35,7 +35,7 @@ class CategorySerializer(serializers.ModelSerializer):
 class MContentFileSerializer(serializers.ModelSerializer):
     class Meta:
         model = MContentsFile
-        fields = '__all__'
+        fields = ['fcontent','storage']
 
 class MFileSerializer(serializers.ModelSerializer):
     class Meta:
