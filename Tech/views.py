@@ -462,15 +462,21 @@ def TaskTeamCreate(request, pk, tnum):
 def fileRead(request, pk):
     mcs= []
     mf = MContentsFile.objects.filter(performance_id=pk)
-    print(mf[0].fcontent.url)
-    print(mf[0].fcontent.url[1:])
-    for i in mf:
-        mi=i.mcontents_id
-        mcs.append(MContents.objects.get(performance_id=pk, filetype=1, id=mi))
-
 
     if request.method == "GET":
-        mf_s =MContentFileSerializer(mf, many=True)
+        for i in mf:
+            if i.name == None:
+                i.name = filename(i)
+                i.save()
+                mcs.append(i)
+                print(i)
+                print("됐다")
+            else:
+                mcs.append(i)
+                print(i)
+                print("안됐다")
+
+        mf_s =MContentFileSerializer(mcs, many=True)
         #mc_s =MContentSerializer(mcs, many=True)
         return Response(mf_s.data,content_type=u"application/json; charset=utf-8")
 
@@ -480,11 +486,20 @@ def filedown(request, pk, id):
         mf = get_object_or_404(MContentsFile, performance_id=pk, id=id)
         url = mf.fcontent.url[1:]
         file_url = urllib.parse.unquote(url)
-
+        print(url)
+        print(file_url)
         if os.path.exists(file_url):
             with open(file_url, 'rb') as fh:
                 quote_file_url = urllib.parse.quote(file_url.encode('utf-8'))
+                print(quote_file_url)
                 response = HttpResponse(fh.read(), content_type=mimetypes.guess_type(file_url)[0])
                 response['Content-Disposition'] = 'attachment;fcontent*=UTF-8\'\'%s' % quote_file_url
                 return response
             raise Http404
+
+def filename(mc):
+    ma = mc
+    na = ma.fcontent.url[13:]
+    furl = urllib.parse.unquote(na)
+
+    return furl

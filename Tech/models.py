@@ -73,6 +73,7 @@ class MContentsFile(models.Model):
     fcontent = models.FileField(upload_to="files/", null=True, blank=True)
     performance = models.ForeignKey(Performance, on_delete=models.CASCADE,null=True,blank=True)
     storage = models.CharField(max_length=1000, null=True, blank=True)
+    name = models.CharField(max_length=1000, null=True, blank=True)
 
     def __str__(self):
         return str(self.mcontents.SCName) + "," + str(self.fcontent)

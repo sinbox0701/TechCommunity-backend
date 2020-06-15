@@ -40,7 +40,7 @@ class MContentFileSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = MContentsFile
-        fields = ['fcontent','storage']
+        fields = ['fcontent','storage', 'name']
 
 class MFileSerializer(serializers.ModelSerializer):
     class Meta:
