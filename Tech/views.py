@@ -199,8 +199,10 @@ def PeDeleteView(request,pk):
 
 @api_view(['GET', 'POST','PUT'])
 def TaskContentView(request, pk, tnum):
+
     mtask1 = get_list_or_404(MTask.objects.order_by('DetNum'), performance_id=pk, TNum=tnum, Dbool=0)
     mtask2 = get_object_or_404(MTask.objects.order_by('DetNum'), performance_id=pk, TNum=tnum, Dbool=1)
+
     mtask1_serializer = MTaskSerializer(mtask1, many=True)
     mtask2_serializer = MTaskSerializer(mtask2)
     sc = []
@@ -232,6 +234,7 @@ def TaskContentView(request, pk, tnum):
     #userd = get_object_or_404(UserDetail, user=request.user)
     com = Comment.objects.filter(performance_id=pk, TNum=tnum).order_by('create')
     print("dddd")
+
     com_serializer = CommentSerializer(com, many=True)
 
     if request.method == 'GET': # Contents Task Read
@@ -345,6 +348,7 @@ def ContentsUpdateView(request,pk,tnum,id):
 def comment(request,pk,tnum):
     #mtask = get_object_or_404(MTask, performance_id=pk, TNum=tnum, Dbool=1)
     #comment = Comment.objects.filter(TNum=mtask.TNum)
+
     userd = get_object_or_404(UserDetail, user=request.user, TNum=None)
 
     if request.method == 'POST':
@@ -356,6 +360,7 @@ def comment(request,pk,tnum):
             comment_serializer.save()
             return Response(comment_serializer.data)
         return Response(comment_serializer.errors,status.HTTP_400_BAD_REQUEST)
+
 
 @api_view(['GET','POST'])
 def comment_reply(request,pk,tnum,id):
