@@ -280,7 +280,6 @@ def ContentsUpdateView(request,pk,tnum,id):
             if con.id == id:
                 st = t.DetName + " 의 " + con.SCName + " 에 업로드된 파일입니다."
                 confile = MContentsFile.objects.create(mcontents=con, storage=st, performance_id=pk)
-                con_serializer = MContentSerializer(con, data=request.data)
                 confile_serializer = MContentFileSerializer(confile, data=request.data)
                 break
         else:
@@ -293,21 +292,18 @@ def ContentsUpdateView(request,pk,tnum,id):
         if con.filetype == 1:
             if confile_serializer.is_valid():
                 confile_serializer.save()
-                if con_serializer.is_valid():
-                    con_serializer.save()
-                    t = get_object_or_404(MTask, performance_id=pk, mcontents_id=value, SCNum=key, TNum=tnum)
-                    print(request.user)
-                    ud = get_object_or_404(UserDetail, user_id=request.user, performance_id=pk, TNum=None)
-                    print(ud)
-                    mod = t.DetName + " 의 " + con.SCName + " 에 " +  " 파일이 업로드 되었습니다."
-                    dlog = DetailLog.objects.create(performance_id=pk, mtask=t, userdetail=ud, mc=t.mcontents_id, mod=mod,username=request.user.username)
-                    dlog.save()
-                   # dlog_serializer = DetailLogSerializer(dlog)
-                    s=[]
-                    s.append(con_serializer.data)
-                    s.append(confile_serializer.data)
-                  #  s.append(dlog_serializer)
-                    return Response(s)
+
+                t = get_object_or_404(MTask, performance_id=pk, mcontents_id=value, SCNum=key, TNum=tnum)
+                print(request.user)
+                ud = get_object_or_404(UserDetail, user_id=request.user, performance_id=pk, TNum=None)
+                print(ud)
+                mod = t.DetName + " 의 " + con.SCName + " 에 " + " 파일이 업로드 되었습니다."
+                dlog = DetailLog.objects.create(performance_id=pk, mtask=t, userdetail=ud, mc=t.mcontents_id, mod=mod,
+                                                username=request.user.username)
+                dlog.save()
+                # dlog_serializer = DetailLogSerializer(dlog)
+                #  s.append(dlog_serializer)
+
                 return Response(confile_serializer.data)
             return Response(confile_serializer.errors, status.HTTP_400_BAD_REQUEST)
         else:
