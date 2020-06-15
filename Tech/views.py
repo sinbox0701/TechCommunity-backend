@@ -1,3 +1,5 @@
+import mimetypes
+
 from django.shortcuts import render, get_object_or_404, redirect,get_list_or_404
 from django.contrib import auth
 from django.http import HttpResponseRedirect
@@ -12,6 +14,16 @@ from rest_framework.response import Response
 from .serializers import *
 from rest_framework.views import APIView
 # Create your views here.
+
+
+from mimetypes import guess_type
+import os
+import re
+from django.http import HttpResponse, HttpResponseRedirect, Http404
+from urllib.parse import quote
+import urllib
+
+
 
 
 def show(request):
@@ -187,15 +199,19 @@ def PeDeleteView(request,pk):
 
 @api_view(['GET', 'POST','PUT'])
 def TaskContentView(request, pk, tnum):
-    mtask1 = get_list_or_404(MTask.objects.order_by('id'), performance_id=pk, TNum=tnum, Dbool=0)
-    print(mtask1)
-    mtask2 = get_object_or_404(MTask.objects.order_by('id'), performance_id=pk, TNum=tnum, Dbool=1)
+
+    mtask1 = get_list_or_404(MTask.objects.order_by('DetNum'), performance_id=pk, TNum=tnum, Dbool=0)
+    mtask2 = get_object_or_404(MTask.objects.order_by('DetNum'), performance_id=pk, TNum=tnum, Dbool=1)
 
     mtask1_serializer = MTaskSerializer(mtask1, many=True)
     mtask2_serializer = MTaskSerializer(mtask2)
     sc = []
     mcc = []
     mcont = []
+    taskteam = TaskTeam.objects.filter(performance_id=pk, TNum=tnum)
+    taskteam_ser = TaskTeamSerializer(taskteam, many=True)
+    participate = UserDetail.objects.filter(performance_id=pk, TNum=tnum)
+    participate_ser = UserDetailSerializer(participate, many=True)
     dl = []
     delog = DetailLog.objects.filter(performance_id=pk).order_by('date')
     for i in mtask1:
@@ -224,7 +240,7 @@ def TaskContentView(request, pk, tnum):
     if request.method == 'GET': # Contents Task Read
         s=[]
         s.append(mtask2_serializer.data)
-        s = s + dl_serializer.data + mtask1_serializer.data + mcont_serializer.data + com_serializer.data
+        s = s + dl_serializer.data + mtask1_serializer.data + mcont_serializer.data + com_serializer.data + taskteam_ser.data + participate_ser.data
         return Response(s)
 
     elif request.method == 'PUT': # Task Update
@@ -233,6 +249,7 @@ def TaskContentView(request, pk, tnum):
             mtask3_serializer.save()
             return Response(mtask3_serializer.data)
         return Response(mtask3_serializer.errors, status.HTTP_400_BAD_REQUEST)
+
 
 '''
 @api_view(['GET', 'POST'])
@@ -305,7 +322,7 @@ def ContentsUpdateView(request,pk,tnum,id):
                 # dlog_serializer = DetailLogSerializer(dlog)
                 #  s.append(dlog_serializer)
 
-                return Response(confile_serializer.data)
+                return Response(confile_serializer.data,content_type=u"application/json; charset=utf-8")
             return Response(confile_serializer.errors, status.HTTP_400_BAD_REQUEST)
         else:
             if con_serializer.is_valid():
@@ -405,11 +422,17 @@ def fileupload(request,pk, tnum, id):
 def TaskMod(request,pk,tnum):
     mtask = get_object_or_404(MTask, performance_id=pk, TNum=tnum, Dbool=1)
     if request.method == "PUT":
+
         mt_s = MTaskSerializer(mtask, data=request.data)
         if mt_s.is_valid():
+            print(mtask.Dbool)
+            print(request.data)
             mt_s.save()
+            print(mtask.Dbool)
+            print(mt_s.data)
             return Response(mt_s.data)
         return Response(mt_s.errors, status.HTTP_400_BAD_REQUEST)
+
 
 @api_view(['GET', 'POST'])
 def TaskUserCreate(request,pk,tnum):
@@ -439,16 +462,29 @@ def TaskTeamCreate(request, pk, tnum):
 def fileRead(request, pk):
     mcs= []
     mf = MContentsFile.objects.filter(performance_id=pk)
-
+    print(mf[0].fcontent.url)
+    print(mf[0].fcontent.url[1:])
     for i in mf:
         mi=i.mcontents_id
         mcs.append(MContents.objects.get(performance_id=pk, filetype=1, id=mi))
-        print(i.id)
+
 
     if request.method == "GET":
         mf_s =MContentFileSerializer(mf, many=True)
-        mc_s =MContentSerializer(mcs, many=True)
-        return Response(mf_s.data+mc_s.data)
+        #mc_s =MContentSerializer(mcs, many=True)
+        return Response(mf_s.data,content_type=u"application/json; charset=utf-8")
 
+@api_view(['GET', 'POST'])
+def filedown(request, pk, id):
+    if request.method == 'GET':
+        mf = get_object_or_404(MContentsFile, performance_id=pk, id=id)
+        url = mf.fcontent.url[1:]
+        file_url = urllib.parse.unquote(url)
 
-
+        if os.path.exists(file_url):
+            with open(file_url, 'rb') as fh:
+                quote_file_url = urllib.parse.quote(file_url.encode('utf-8'))
+                response = HttpResponse(fh.read(), content_type=mimetypes.guess_type(file_url)[0])
+                response['Content-Disposition'] = 'attachment;fcontent*=UTF-8\'\'%s' % quote_file_url
+                return response
+            raise Http404

@@ -113,8 +113,9 @@ class MTask(models.Model):
     date = models.DateField(null=True, blank=True) # 일반업무에서는 마감 날짜 회의업무에서는 회의 날짜
     status = enum.EnumField(statustyle, default=statustyle.none, null=False) # 업무 상태
     place = models.TextField(null=True, blank=True) # 회의업무 시에 회의장소
-    bool = models.BooleanField(null=True, blank=True)  # 일반업무 = 0 회의업무 = 1
-    Dbool = models.BooleanField(null=True, blank=True)  # Task 만 => 1 Task+Det+Contents =>0
+    bool = models.IntegerField(null=True, blank=True, default=0)  # 일반업무 = 0 회의업무 = 1
+    Dbool = models.IntegerField(null=True, blank=True,default=0)  # Task 만 => 1 Task+Det+Contents =>0
+
 
     def __str__(self):
 
