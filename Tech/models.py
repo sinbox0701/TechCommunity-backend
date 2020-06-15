@@ -100,21 +100,21 @@ class statustyle(enum.Enum):
 
 
 class MTask(models.Model):
-    TNum = models.IntegerField(null=False)  # Task number
+    TNum = models.IntegerField(null=True, blank=True)  # Task number
     DetNum = models.IntegerField(null=True, blank=True)  # 업무항목 number
     SCNum = models.IntegerField(null=True, blank=True)  # 템플릿 콘텐츠 id
-    TName = models.CharField(max_length=40, null=False)  # Task 이름
+    TName = models.CharField(max_length=40, null=True, blank=True)  # Task 이름
     DetName = models.CharField(max_length=40, null=True, blank=True)  # 업무항목 이름
     objective = models.TextField(null=True, blank=True)  # 목표
     category = models.IntegerField(null=True, blank=True)
     mcontents = models.ForeignKey(MContents, on_delete=models.CASCADE, null=True, blank=True) # Task 별 들어갈 콘텐츠
     performance = models.ForeignKey(Performance, on_delete=models.CASCADE, null=True, blank=True)
-    team = models.CharField(max_length=40, null=False) # 일반업무 시 : 업무팀    회의업무 시 : 업무 이름
-    date = models.DateTimeField(null=True, blank=True) # 일반업무에서는 마감 날짜 회의업무에서는 회의 날짜
+    team = models.CharField(max_length=40, null=True, blank=True) # 일반업무 시 : 업무팀    회의업무 시 : 업무 이름
+    date = models.DateField(null=True, blank=True) # 일반업무에서는 마감 날짜 회의업무에서는 회의 날짜
     status = enum.EnumField(statustyle, default=statustyle.none, null=False) # 업무 상태
     place = models.TextField(null=True, blank=True) # 회의업무 시에 회의장소
-    bool = models.BooleanField(null=True, blank=True, default=0)  # 일반업무 = 0 회의업무 = 1
-    Dbool = models.BooleanField(null=True, blank=True, default=0)  # Task 만 => 1 Task+Det+Contents =>0
+    bool = models.BooleanField(null=True, blank=True)  # 일반업무 = 0 회의업무 = 1
+    Dbool = models.BooleanField(null=True, blank=True)  # Task 만 => 1 Task+Det+Contents =>0
 
     def __str__(self):
 
