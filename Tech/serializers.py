@@ -33,6 +33,11 @@ class CategorySerializer(serializers.ModelSerializer):
         fields = '__all__'
 
 class MContentFileSerializer(serializers.ModelSerializer):
+
+    def __init__(self, *args, **kwargs):
+        super(MContentFileSerializer, self).__init__(*args, **kwargs)
+        self.fields['fcontent'].required = False
+
     class Meta:
         model = MContentsFile
         fields = ['fcontent','storage']
