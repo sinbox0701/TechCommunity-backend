@@ -193,8 +193,10 @@ def PeDeleteView(request,pk): # 공연 삭제
 
 @api_view(['GET', 'POST','PUT'])
 def TaskContentView(request, pk, tnum): # Task 별로 확인
+
     mtask1 = get_list_or_404(MTask.objects.order_by('DetNum'), performance_id=pk, TNum=tnum, Dbool=0)
     mtask2 = get_object_or_404(MTask.objects.order_by('DetNum'), performance_id=pk, TNum=tnum, Dbool=1)
+
     mtask1_serializer = MTaskSerializer(mtask1, many=True)
     mtask2_serializer = MTaskSerializer(mtask2)
     sc = []
@@ -378,7 +380,7 @@ def ContentsUpdateView(request,pk,tnum,id):
 @api_view(['GET','POST'])
 def comment(request,pk,tnum):
     userd = UserDetail.objects.get(performance_id=pk,user=request.user, TNum=None)
-    print(userd)
+
     if request.method == 'POST':
         comment = Comment.objects.create(performance_id=pk, TNum=tnum, userdetail=userd, username=request.user.username)
         comment_serializer = CommentSerializer(comment, data=request.data)
@@ -386,6 +388,7 @@ def comment(request,pk,tnum):
             comment_serializer.save()
             return Response(comment_serializer.data)
         return Response(comment_serializer.errors,status.HTTP_400_BAD_REQUEST)
+
 
 @api_view(['GET','POST'])
 def comment_reply(request,pk,tnum,id):

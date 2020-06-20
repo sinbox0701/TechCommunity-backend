@@ -117,6 +117,7 @@ class MTask(models.Model):
     bool = models.IntegerField(null=True, blank=True, default=0)  # 일반업무 = 0 회의업무 = 1
     Dbool = models.IntegerField(null=True, blank=True,default=0)  # Task 만 => 1 Task+Det+Contents =>0
 
+
     def __str__(self):
 
         return self.performance.title + "," + str(self.id) + "," +  str(self.TNum) + "," + self.TName + "," + str(self.bool) + "," + str(self.Dbool)
