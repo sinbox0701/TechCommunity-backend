@@ -123,17 +123,17 @@ def PeCreateView(request): # 공연 생성
                         if i.Dbool == 1:
                             MTask.objects.create(TNum=i.TNum, DetNum=i.DetNum, TName=i.TName, DetName=i.DetName,
                                                  SCNum=i.SCNum, objective=i.objective, category=i.category_id,
-                                                 bool=i.bool,
+                                                 bool=i.bool,team=i.team,
                                                  performance=perfor, Dbool=1)
                         else:
                             MTask.objects.create(TNum=i.TNum, DetNum=i.DetNum, TName=i.TName, DetName=i.DetName,
                                                  SCNum=i.SCNum, objective=i.objective, category=i.category_id, bool=i.bool,
-                                                 performance=perfor,Dbool=0)
+                                                 performance=perfor,team=i.team,Dbool=0)
                         break
                     elif i.SCNum == x.SCNum:
                         MTask.objects.create(TNum=i.TNum, DetNum=i.DetNum, TName=i.TName, DetName=i.DetName,
                                              SCNum=i.SCNum, objective=i.objective, category=i.category_id, bool=i.bool,
-                                             performance=perfor,mcontents_id=x.id,Dbool=0)
+                                             performance=perfor,mcontents_id=x.id,team=i.team,Dbool=0)
                         break
                     else:
                         continue
