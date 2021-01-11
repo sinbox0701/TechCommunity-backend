@@ -121,23 +121,6 @@ WSGI_APPLICATION = 'TechCommunity.wsgi.application'
 # Database
 # https://docs.djangoproject.com/en/3.0/ref/settings/#databases
 
-DATABASES = {
-    'default': {
-        'ENGINE': 'django.db.backends.postgresql_psycopg2',
-        'NAME': 'showmanship',
-        'USER': 'postgres',
-        'PASSWORD': 'hufs2020',
-        'HOST': 'showmanship.cfue43wepxo7.ap-northeast-2.rds.amazonaws.com',  # 혹은 'localhost'
-        'PORT': '5432',  # 혹은 ''
-    }
-}
-
-JWT_AUTH = {
-    'JWT_RESPONSE_PAYLOAD_HANDLER': 'TechCommunity.utils.my_jwt_response_handler',
-    'JWT_REFRESH_EXPIRATION_DELTA': datetime.timedelta(days=7),
-    'JWT_EXPIRATION_DELTA': datetime.timedelta(days=7),
-}
-
 
 # Password validation
 # https://docs.djangoproject.com/en/3.0/ref/settings/#auth-password-validators
