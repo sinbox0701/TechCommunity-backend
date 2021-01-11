@@ -1,3 +1,5 @@
+import mimetypes
+
 from django.shortcuts import render, get_object_or_404, redirect,get_list_or_404
 from django.contrib import auth
 from django.http import HttpResponseRedirect
@@ -12,6 +14,16 @@ from rest_framework.response import Response
 from .serializers import *
 from rest_framework.views import APIView
 # Create your views here.
+
+
+from mimetypes import guess_type
+import os
+import re
+from django.http import HttpResponse, HttpResponseRedirect, Http404
+from urllib.parse import quote
+import urllib
+
+
 
 
 def show(request):
@@ -69,24 +81,17 @@ def logout(request):
 
 @api_view(['GET', 'POST'])
 def PeListView(request):
-    if request.method == 'GET':
+    if request.method == 'GET': # 진행중인 공연 ListView
         per_list = Performance.objects.all()
         perl = per_list[1:]
-        print(perl)
-        serializer = PerformanceSerializer(perl, many=True)
-        return Response(serializer.data)
-    elif request.method == 'POST':
-        per_list = Performance.objects.all()
-        perl = per_list[1:]
-        print(perl)
         serializer = PerformanceSerializer(perl, many=True)
         return Response(serializer.data)
 
+
 @api_view(['GET','POST'])
-def PeCreateView(request):
+def PeCreateView(request): # 공연 생성
     if request.method == "POST":
         create_serializer = PerformanceCreateSerializer(data=request.data)
-        form = PerCreateForm(request.POST, request.FILES)
         scontents = SContents.objects.order_by('id')
         if create_serializer.is_valid():
             genre = create_serializer.validated_data['genre']
@@ -100,8 +105,8 @@ def PeCreateView(request):
             p = Performance.objects.order_by('-id')
             l=p[0].id+1
             perfor=Performance.objects.create(pk=l,title=title)
-           #new_user = UserDetail.objects.create(user=request.user, performance=perfor)
-            #new_user.save()
+            new_user = UserDetail.objects.create(user=request.user, performance=perfor)
+            new_user.save()
             a=[genre,title,directiont,configurationt,check,date,place,special]
             for i in scontents:
                 MContents.objects.create(performance=perfor, SCNum=i.id, SCName=i.SCName,filetype=i.filetype)
@@ -110,7 +115,7 @@ def PeCreateView(request):
                 mc = MContents.objects.get(performance=perfor,SCNum=scontents[i].id,SCName=scontents[i].SCName)
                 mc.tcontent = a[i]
                 mc.save()
-            mct = MContents.objects.order_by('id')
+            mct = MContents.objects.filter(performance_id=l).order_by('id')
             s = STask.objects.order_by('id')
             for i in s:
                 for x in mct:
@@ -118,17 +123,17 @@ def PeCreateView(request):
                         if i.Dbool == 1:
                             MTask.objects.create(TNum=i.TNum, DetNum=i.DetNum, TName=i.TName, DetName=i.DetName,
                                                  SCNum=i.SCNum, objective=i.objective, category=i.category_id,
-                                                 bool=i.bool,
+                                                 bool=i.bool,team=i.team,
                                                  performance=perfor, Dbool=1)
                         else:
                             MTask.objects.create(TNum=i.TNum, DetNum=i.DetNum, TName=i.TName, DetName=i.DetName,
                                                  SCNum=i.SCNum, objective=i.objective, category=i.category_id, bool=i.bool,
-                                                 performance=perfor,Dbool=0)
+                                                 performance=perfor,team=i.team,Dbool=0)
                         break
                     elif i.SCNum == x.SCNum:
                         MTask.objects.create(TNum=i.TNum, DetNum=i.DetNum, TName=i.TName, DetName=i.DetName,
                                              SCNum=i.SCNum, objective=i.objective, category=i.category_id, bool=i.bool,
-                                             performance=perfor,mcontents=x,Dbool=0)
+                                             performance=perfor,mcontents_id=x.id,team=i.team,Dbool=0)
                         break
                     else:
                         continue
@@ -136,7 +141,7 @@ def PeCreateView(request):
     return Response(create_serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 @api_view(['GET','POST'])
-def CaTaskView(request,pk):
+def CaTaskView(request,pk): # Process Template View
     if request.method == 'GET':
         category = Category.objects.all()
         category_serializer = CategorySerializer(category, many=True)
@@ -149,7 +154,8 @@ def CaTaskView(request,pk):
         s = s + category_serializer.data + mtask_serializer.data
         return Response(s)
 
-'''@api_view(['GET','POST','DELETE'])
+''' # 부서 추가 기능
+@api_view(['GET','POST','DELETE'])
 def DepCreateView(request,pk):
     performance = get_object_or_404(Performance, pk=pk)
 
@@ -174,7 +180,7 @@ def DepCreateView(request,pk):
     return Response(dep_ser.errors, status=status.HTTP_400_BAD_REQUEST)
     '''
 @api_view(['GET', 'DELETE'])
-def PeDeleteView(request,pk):
+def PeDeleteView(request,pk): # 공연 삭제
     try:
         performance = Performance.objects.get(pk=pk)
     except Performance.DoesNotExist:
@@ -186,9 +192,9 @@ def PeDeleteView(request,pk):
 
 
 @api_view(['GET', 'POST','PUT'])
-def TaskContentView(request, pk, tnum):
+def TaskContentView(request, pk, tnum): # Task 별로 확인
+
     mtask1 = get_list_or_404(MTask.objects.order_by('DetNum'), performance_id=pk, TNum=tnum, Dbool=0)
-    print(mtask1)
     mtask2 = get_object_or_404(MTask.objects.order_by('DetNum'), performance_id=pk, TNum=tnum, Dbool=1)
 
     mtask1_serializer = MTaskSerializer(mtask1, many=True)
@@ -196,6 +202,59 @@ def TaskContentView(request, pk, tnum):
     sc = []
     mcc = []
     mcont = []
+    #taskteam = TaskTeam.objects.filter(performance_id=pk, TNum=tnum)
+    #taskteam_ser = TaskTeamSerializer(taskteam, many=True)
+    #participate = UserDetail.objects.filter(performance_id=pk, TNum=tnum)
+    #participate_ser = UserDetailSerializer(participate, many=True)
+    dl = []
+    delog = DetailLog.objects.filter(performance_id=pk).order_by('date')
+    for i in mtask1:
+        sc.append(i.SCNum)
+        mcc.append(i.mcontents_id)
+        dd = delog.filter(mc=i.mcontents_id)
+        dl = dl +list(dd)
+
+    dl.sort(key=lambda object: object.date)
+    dl_serializer = DetailLogSerializer(dl, many=True)
+
+    c = [x for x in zip(sc, mcc)]
+    c = dict(c)
+
+    for key, value in c.items():
+        mcont.append(MContents.objects.get( performance_id=pk, id=value, SCNum=key))
+    mcont_serializer = MContentSerializer(mcont, many=True)
+
+    com = Comment.objects.filter(performance_id=pk, TNum=tnum).order_by('create')
+    com_serializer = CommentSerializer(com, many=True)
+
+    if request.method == 'GET': # Contents Task Read
+        s=[]
+        s.append(mtask2_serializer.data)
+        s = s + dl_serializer.data + mtask1_serializer.data + mcont_serializer.data + com_serializer.data
+        return Response(s)
+
+    elif request.method == 'PUT': # Task Update
+        mtask3_serializer = MTaskSerializer(mtask2,data=request.data)
+        if mtask3_serializer.is_valid():
+            mtask3_serializer.save()
+            return Response(mtask3_serializer.data)
+        return Response(mtask3_serializer.errors, status.HTTP_400_BAD_REQUEST)
+
+
+''' # 회의업무 
+@api_view(['GET', 'POST','PUT'])
+def ConferencetView(request, pk, tnum):
+    mtask1 = get_list_or_404(MTask.objects.order_by('DetNum'), performance_id=pk, TNum=tnum, Dbool=0)
+    mtask2 = get_object_or_404(MTask.objects.order_by('DetNum'), performance_id=pk, TNum=tnum, Dbool=1)
+    mtask1_serializer = MTaskSerializer(mtask1, many=True)
+    mtask2_serializer = MTaskSerializer(mtask2)
+    sc = []
+    mcc = []
+    mcont = []
+    taskteam = TaskTeam.objects.filter(performance_id=pk, TNum=tnum)
+    taskteam_ser = TaskTeamSerializer(taskteam, many=True)
+    participate = UserDetail.objects.filter(performance_id=pk, TNum=tnum)
+    participate_ser = UserDetailSerializer(participate, many=True)
     dl = []
     delog = DetailLog.objects.filter(performance_id=pk).order_by('date')
     for i in mtask1:
@@ -218,13 +277,12 @@ def TaskContentView(request, pk, tnum):
     #userd = get_object_or_404(UserDetail, user=request.user)
     com = Comment.objects.filter(performance_id=pk, TNum=tnum).order_by('create')
     print("dddd")
-
     com_serializer = CommentSerializer(com, many=True)
 
     if request.method == 'GET': # Contents Task Read
         s=[]
         s.append(mtask2_serializer.data)
-        s = s + dl_serializer.data + mtask1_serializer.data + mcont_serializer.data + com_serializer.data
+        s = s + dl_serializer.data + mtask1_serializer.data + mcont_serializer.data + com_serializer.data + taskteam_ser.data + participate_ser.data
         return Response(s)
 
     elif request.method == 'PUT': # Task Update
@@ -235,7 +293,9 @@ def TaskContentView(request, pk, tnum):
         return Response(mtask3_serializer.errors, status.HTTP_400_BAD_REQUEST)
 
 '''
-@api_view(['GET', 'POST'])
+
+'''
+@api_view(['GET', 'POST']) # Detail 추가 
 def DetailCreateView(request, pk, tnum):
     mtask1 = get_list_or_404(MTask.objects.order_by('DetNum'), performance_id=pk, TNum=tnum, Dbool=0)
     detn = mtask1[0].DetNum
@@ -275,10 +335,12 @@ def ContentsUpdateView(request,pk,tnum,id):
     c = dict(c)
     for key, value in c.items():
         con = (get_object_or_404(MContents, performance_id=pk, pk=value, SCNum=key))
+        tname = con.tcontent
+        t = get_object_or_404(MTask, performance_id=pk, mcontents_id=value, SCNum=key, TNum=tnum)
         if con.filetype == 1:
-            confile = MContentsFile.objects.create(mcontents=con)
             if con.id == id:
-                con_serializer = MContentSerializer(con, data=request.data)
+                st = t.TName + " 에서 " + t.DetName + " 의 " + con.SCName + " 에 업로드된 파일입니다."
+                confile = MContentsFile.objects.create(mcontents=con, storage=st, performance_id=pk)
                 confile_serializer = MContentFileSerializer(confile, data=request.data)
                 break
         else:
@@ -287,60 +349,40 @@ def ContentsUpdateView(request,pk,tnum,id):
                 break
 
     if request.method == 'PUT': # Contents Update
-        print(con.filetype)
         if con.filetype == 1:
             if confile_serializer.is_valid():
                 confile_serializer.save()
-                if con_serializer.is_valid():
-                    con_serializer.save()
-                    t = get_object_or_404(MTask, performance_id=pk, mcontents_id=value, SCNum=key, TNum=tnum)
-                    print(request.user)
-                    ud = get_object_or_404(UserDetail, user_id=request.user, performance_id=pk, TNum=None)
-                    print(ud)
-                    dlog = DetailLog.objects.create(performance_id=pk, mtask=t, userdetail=ud, mc=t.mcontents_id)
-                    dlog.save()
-                   # dlog_serializer = DetailLogSerializer(dlog)
-                    s=[]
-                    s.append(con_serializer.data)
-                    s.append(confile_serializer.data)
-                  #  s.append(dlog_serializer)
-                    return Response(s)
-                return Response(confile_serializer.data)
+
+                t = get_object_or_404(MTask, performance_id=pk, mcontents_id=value, SCNum=key, TNum=tnum)
+                print(request.user)
+                ud = get_object_or_404(UserDetail, user_id=request.user, performance_id=pk, TNum=None)
+                print(ud)
+                mod = request.user.username + " 님이 " + t.TName + " 에서 " + t.DetName + " 의 " + con.SCName + " 에 " + " 파일을 업로드 하였습니다."
+                dlog = DetailLog.objects.create(performance_id=pk, userdetail=ud, mc=t.mcontents_id, mod=mod,
+                                                username=request.user.username)
+                dlog.save()
+
+
+                return Response(confile_serializer.data,content_type=u"application/json; charset=utf-8")
             return Response(confile_serializer.errors, status.HTTP_400_BAD_REQUEST)
         else:
             if con_serializer.is_valid():
                 con_serializer.save()
                 t = get_object_or_404(MTask, performance_id=pk, mcontents_id=value, SCNum=key, TNum=tnum)
-                print(request.user)
                 ud = get_object_or_404(UserDetail, user_id=request.user, performance_id=pk, TNum=None)
-                print(ud)
-                dlog = DetailLog.objects.create(performance_id=pk, mtask=t, userdetail=ud, mc=t.mcontents_id)
+                mod = request.user.username + " 님이 " + t.TName + " 에서 " + t.DetName + " 의 " + con.SCName + " 를(을) " + tname + " 에서 " + con.tcontent + " 로 변경 하였습니다."
+                dlog = DetailLog.objects.create(performance_id=pk, mtask=t, userdetail=ud, mc=t.mcontents_id,mod=mod,username=request.user.username)
                 dlog.save()
                 return Response(con_serializer.data)
             return Response(con_serializer.errors, status.HTTP_400_BAD_REQUEST)
-    #if request.method == 'POST':
-     #   confile = MContentsFile.objects.create(mcontents=con)
-
-
-#@api_view(['GET', 'PUT'])
-#def TaskUpdateView(request,pk,tnum,):
 
 
 @api_view(['GET','POST'])
 def comment(request,pk,tnum):
-    #mtask = get_object_or_404(MTask, performance_id=pk, TNum=tnum, Dbool=1)
-    #comment = Comment.objects.filter(TNum=mtask.TNum)
-    userd = get_object_or_404(UserDetail, user=request.user)
-    if request.method == 'GET':
-        com = get_list_or_404(Comment, performance_id=pk, TNum=tnum)
-        com_ser = CommentSerializer(com, many=True)
-
-        return Response(com_ser.data)
+    userd = UserDetail.objects.get(performance_id=pk,user=request.user, TNum=None)
 
     if request.method == 'POST':
         comment = Comment.objects.create(performance_id=pk, TNum=tnum, userdetail=userd, username=request.user.username)
-        print(request.user.username)
-        print('dddddddddd')
         comment_serializer = CommentSerializer(comment, data=request.data)
         if comment_serializer.is_valid():
             comment_serializer.save()
@@ -350,7 +392,7 @@ def comment(request,pk,tnum):
 
 @api_view(['GET','POST'])
 def comment_reply(request,pk,tnum,id):
-    userd = UserDetail.objects.get(user=request.user)
+    userd = UserDetail.objects.filter(performance_id=pk, user=request.user, TNum=None)
     if request.method == 'POST':
         comment = Comment.objects.create(performance_id=pk, TNum=tnum, userdetail=userd, parent_id=id, username=request.user.username)
         comment_serializer = CommentSerializer(comment, data=request.data)
@@ -408,13 +450,70 @@ def fileupload(request,pk, tnum, id):
 def TaskMod(request,pk,tnum):
     mtask = get_object_or_404(MTask, performance_id=pk, TNum=tnum, Dbool=1)
     if request.method == "PUT":
+
         mt_s = MTaskSerializer(mtask, data=request.data)
         if mt_s.is_valid():
             mt_s.save()
             return Response(mt_s.data)
         return Response(mt_s.errors, status.HTTP_400_BAD_REQUEST)
 
-#@api_view(['GET', 'POST'])
-#def TaskUserTeam(request,pk,tnum):
 
+@api_view(['GET', 'POST'])
+def TaskUserCreate(request,pk,tnum):
 
+    if request.method == "POST":
+        ud = UserDetail.objects.create(performance_id=pk, TNum=tnum)
+        ud_s = UserDetailSerializer(ud,data=request.data)
+        if ud_s.is_valid():
+            ud_s.save()
+            return Response(ud_s.data)
+        return Response(ud_s.errors, status.HTTP_400_BAD_REQUEST)
+
+@api_view(['GET', 'POST'])
+def TaskTeamCreate(request, pk, tnum):
+
+    if request.method == "POST":
+        tt =TaskTeam.objects.create(performance_id=pk, TNum=tnum)
+        tt_s = TaskTeamSerializer(tt, data=request.data)
+        if tt_s.is_valid():
+            tt_s.save()
+            return Response(tt_s.data)
+        return Response(tt_s.errors, status.HTTP_400_BAD_REQUEST)
+
+@api_view(['GET', 'POST'])
+def fileRead(request, pk):
+    mcs= []
+    mf = MContentsFile.objects.filter(performance_id=pk)
+
+    if request.method == "GET":
+        for i in mf:
+            if i.name == None:
+                i.name = filename(i)
+                i.save()
+                mcs.append(i)
+            else:
+                mcs.append(i)
+
+        mf_s =MContentFileSerializer(mcs, many=True)
+        return Response(mf_s.data,content_type=u"application/json; charset=utf-8")
+
+@api_view(['GET', 'POST'])
+def filedown(request, pk, id):
+    if request.method == 'GET':
+        mf = get_object_or_404(MContentsFile, performance_id=pk, id=id)
+        url = mf.fcontent.url[1:]
+        file_url = urllib.parse.unquote(url)
+        if os.path.exists(file_url):
+            with open(file_url, 'rb') as fh:
+                quote_file_url = urllib.parse.quote(file_url.encode('utf-8'))
+                response = HttpResponse(fh.read(), content_type=mimetypes.guess_type(file_url)[0])
+                response['Content-Disposition'] = 'attachment;fcontent*=UTF-8\'\'%s' % quote_file_url
+                return response
+            raise Http404
+
+def filename(mc):
+    ma = mc
+    na = ma.fcontent.url[13:]
+    furl = urllib.parse.unquote(na)
+
+    return furl

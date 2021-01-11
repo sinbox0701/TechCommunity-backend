@@ -18,10 +18,14 @@ from django.urls import path, include
 from rest_framework_jwt.views import obtain_jwt_token
 from Tech.views import show
 
+from django.conf.urls.static import static
+from django.conf import settings
+
+
 urlpatterns = [
     path('', show, name='show'),
     path('api-token-auth/',obtain_jwt_token),
     path('Tech/', include('Tech.urls')),
     path('admin/', admin.site.urls),
     path('accounts/',include('allauth.urls'))
-]
+]+ static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)

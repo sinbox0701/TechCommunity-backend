@@ -33,12 +33,22 @@ class CategorySerializer(serializers.ModelSerializer):
         fields = '__all__'
 
 class MContentFileSerializer(serializers.ModelSerializer):
+
+    def __init__(self, *args, **kwargs):
+        super(MContentFileSerializer, self).__init__(*args, **kwargs)
+        self.fields['fcontent'].required = False
+
+    class Meta:
+        model = MContentsFile
+        fields = ['fcontent','storage', 'name']
+
+class MFileSerializer(serializers.ModelSerializer):
     class Meta:
         model = MContentsFile
         fields = ['fcontent']
 
 class MContentSerializer(serializers.ModelSerializer):
-    fcontents = MContentFileSerializer(many = True, read_only= True)
+    fcontents = MFileSerializer(many = True, read_only= True)
 
     class Meta:
         model = MContents
@@ -104,4 +114,14 @@ class CommentSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Comment
+        fields = '__all__'
+
+class TaskTeamSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = TaskTeam
+        fields = '__all__'
+
+class UserDetailSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = UserDetail
         fields = '__all__'
